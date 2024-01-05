@@ -1,0 +1,18 @@
+<div class="tavoli_body">
+  <p class="legend_tavoli">Tavoli</p> 
+  
+  <fieldset class="fieldset_tavoli">
+    <mat-chip-listbox>
+
+      <mat-chip  *ngFor='let tavolo of tavoli' (click)="onTavoloClick(tavolo)">
+        <button mat-button>{{ tavolo.nome }}</button>
+      </mat-chip>
+
+    </mat-chip-listbox>
+  </fieldset>
+
+  <div  class="bottom-flex-container">
+    <!-- fa fare div  [ngClass]="{'bottom-flex-container': !molti_tav, 'bottom-flex-container_bis': molti_tav}"-->
+    <input class="legend_add_tavoli" matInput placeholder="Nuovo Tavolo" (keydown)="onEnterKeyPressed($event)" style="border-radius: 30px">
+  </div>
+</div>

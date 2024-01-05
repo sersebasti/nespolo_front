@@ -1,0 +1,97 @@
+<div class="commanda_body">
+    <p class="legend_commanda">Commanda | {{ dataTavolo.nome }}</p> 
+    
+   
+    <div class="local-container">
+      <fieldset  *ngIf="ordiniVisible">
+        <mat-chip-listbox>
+          <mat-chip  *ngFor='let element of commanda'>
+            <mat-chip-row (removed)="remove(element)">
+              <div (click)="modificaProdotto(element)">{{element.product_title}} ({{ element.quantity }}) {{element.note}}</div>
+              
+              <button matChipRemove [attr.aria-label]="'remove ' + element.product_title">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </mat-chip-row>
+          </mat-chip>
+        </mat-chip-listbox>
+      </fieldset>
+      
+      <fieldset  *ngIf="!ordiniVisible">
+        <p>Titolo: {{ selected_commanda[0].product_title }}</p>
+        <hr>
+        <div *ngIf="selected_commanda[0].product_title != 'altro'">
+          <p>Quantità: <input [(ngModel)]="selected_commanda[0].quantity" type="number" placeholder="Enter a number" /></p>
+          <mat-grid-list cols="3" rowHeight="3:1">
+            <mat-grid-tile><mat-radio-button value="1" [checked]="selected_commanda[0].quantity == 1" (change)="upDateRadio($event)">1</mat-radio-button></mat-grid-tile>
+            <mat-grid-tile><mat-radio-button value="2" [checked]="selected_commanda[0].quantity == 2" (change)="upDateRadio($event)">2</mat-radio-button></mat-grid-tile>
+            <mat-grid-tile><mat-radio-button value="3" [checked]="selected_commanda[0].quantity == 3" (change)="upDateRadio($event)">3</mat-radio-button></mat-grid-tile>
+            <mat-grid-tile><mat-radio-button value="4" [checked]="selected_commanda[0].quantity == 4" (change)="upDateRadio($event)">4</mat-radio-button></mat-grid-tile>
+            <mat-grid-tile><mat-radio-button value="5" [checked]="selected_commanda[0].quantity == 5" (change)="upDateRadio($event)">5</mat-radio-button></mat-grid-tile>
+            <mat-grid-tile><mat-radio-button value="6" [checked]="selected_commanda[0].quantity == 6" (change)="upDateRadio($event)">6</mat-radio-button></mat-grid-tile>
+            <mat-grid-tile><mat-radio-button value="7" [checked]="selected_commanda[0].quantity == 7" (change)="upDateRadio($event)">7</mat-radio-button></mat-grid-tile>
+            <mat-grid-tile><mat-radio-button value="8" [checked]="selected_commanda[0].quantity == 8" (change)="upDateRadio($event)">8</mat-radio-button></mat-grid-tile>
+            <mat-grid-tile><mat-radio-button value="9" [checked]="selected_commanda[0].quantity == 9" (change)="upDateRadio($event)">9</mat-radio-button></mat-grid-tile>
+          </mat-grid-list>
+        </div>
+        <!--div>
+          <p> seleziona reparto</p>
+          <mat-grid-list cols="3" rowHeight="3:1">
+            <mat-grid-tile><mat-radio-button value="1" [checked]="selected_commanda[0].quantity == 1" (change)="upDateRadio($event)">1</mat-radio-button></mat-grid-tile>
+            <mat-grid-tile><mat-radio-button value="2" [checked]="selected_commanda[0].quantity == 2" (change)="upDateRadio($event)">2</mat-radio-button></mat-grid-tile>
+            <mat-grid-tile><mat-radio-button value="3" [checked]="selected_commanda[0].quantity == 3" (change)="upDateRadio($event)">3</mat-radio-button></mat-grid-tile>
+          </mat-grid-list>
+        </div-->
+
+
+        <hr>
+
+        <p>Nota:</p>
+        <textarea [(ngModel)]="selected_commanda[0].note" rows="3" maxlength="2000" placeholder="" class="custom-textarea"></textarea>
+        <hr>
+
+        <div class="centered-row">
+          <button mat-button class="salva" (click)="aggiornaElementoCommanda(selected_commanda[0])">Salva</button>
+        </div>
+         
+
+      <button class="close-button" (click)="closeModificaProdotto()">x</button>  
+      </fieldset>
+
+  
+    </div>
+    <fieldset>
+      <div class="centered-row">
+          <mat-icon class="center-icon">keyboard_arrow_down</mat-icon>
+      </div>
+    </fieldset>
+    <hr>
+
+ 
+  
+    <div  class="bottom-flex-container-1">
+      <input class="legend_add_prodotto centered-element" matInput placeholder="Cerca prodotto"  style="border-radius: 30px" (input)="cercaProdotto($event)" (keydown.enter)=" onSelectedProductEnter($event)"> 
+    </div>
+    <div  class="bottom-flex-container-2" style="display: flex;">
+
+
+        <a mat-button class="bottom-flex-container my_buttons"  (click)="toTavoli($event)"><< Tavoli</a>
+        <a mat-button class="bottom-flex-container my_buttons"  (click)="toTavoli($event)">Conto >></a>      
+  
+
+    </div>
+
+   
+    <mat-chip-listbox aria-label="Fish selection" class="bottom-flex-container-3">
+    
+        <mat-chip  *ngFor='let products of filtered_products' (click)="onSelectedProductChip(products)">
+          <button mat-button>{{ products.title }}</button>
+        </mat-chip>
+  
+
+    </mat-chip-listbox>
+
+
+  </div>
+
+

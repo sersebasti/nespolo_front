@@ -1,0 +1,40 @@
+.tavoli_body {
+    background-color: #51c481; 
+}
+
+.legend_tavoli {
+    margin: auto;
+    text-align: center;
+    font-size: medium;
+    font-weight: bold;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.fieldset_tavoli{
+    padding:  10 px;
+    background-color: #0e032763;
+    padding-bottom:  100px; 
+}
+
+.bottom-flex-container {
+    background-color: #0e032763;
+    padding: 5px;
+    font-size: 30px;
+    
+    position: fixed;
+    left: 50%;
+    bottom: 10px;
+    transform: translate(-50%, -50%);
+    margin: 0 auto;
+    border-radius: 20px;
+}
+
+
+.legend_add_tavoli {
+    color: black;
+    margin: auto;
+    text-align: center;
+    font-size: small;
+    font-weight: bold;
+}
