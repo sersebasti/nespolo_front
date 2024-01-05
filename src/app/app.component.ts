@@ -6,11 +6,12 @@ import { Component } from '@angular/core';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  freq: number = 500
+  freq: number = 250
   userType: string | undefined
 
   tavoliVisible: boolean | undefined
   commandaVisible: boolean | undefined
+  pizzeriaVisible: boolean | undefined
 
   dataTavolo: object | undefined
   
@@ -20,11 +21,22 @@ export class AppComponent {
     this.commandaVisible = false 
 
     //get user type
-    this.userType = "C"
-    
-    if(this.userType == "C"){
-      this.tavoliVisible = true
+    this.userType = "Commessa"
+    //this.userType = "Pizzaiolo"
+    //this.userType = "Cuoca"
+
+    switch (this.userType) {
+      case "Commessa":
+        this.tavoliVisible = true
+        break;
+      case 'Pizzaiolo':
+        this.pizzeriaVisible = true
+        break;
+      case 'Cuoca':
+        console.log('It\'s an orange.');
+        break;
     }
+  
    
   }
 

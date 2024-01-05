@@ -22,13 +22,15 @@ import { MatIconModule } from '@angular/material/icon';
 
 import { HttpClientModule } from '@angular/common/http';
 import { CommandaComponent } from './commanda/commanda.component';
+import { PizzeriaComponent } from './pizzeria/pizzeria.component';
 
 
 @NgModule({
   declarations: [
     AppComponent,
     TavoloComponent,
-    CommandaComponent
+    CommandaComponent,
+    PizzeriaComponent
   ],
   imports: [
     BrowserModule,

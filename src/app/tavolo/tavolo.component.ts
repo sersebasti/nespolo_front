@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output} from '@angular/core';
 import { DjangoService } from '../servizi/django.service';
 import { DataService } from '../servizi/data.service';
 import { __values } from 'tslib';
+import { GenericService } from '../servizi/generic.service';
 
 
 @Component({
@@ -30,23 +31,26 @@ export class TavoloComponent {
   // da fare: se ci sono molti tavoli il bottone su deve spostare più in basso
   //molti_tav = false
 
-  constructor(private django: DjangoService, private dataService: DataService){}
+  constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService){}
   
   ngOnInit(): void {
-    console.log("ngOnTavoloInit");
+   
 
     // Get Tavoli
     console.log("ngOndTavoloInit");
     this.django.getData(this.url_tavoli).subscribe((data: any) =>{
       this.tavoli = data;
+      console.log(data)
     });
     
     // Update Tavoli - freq (ms)
     this.intervalIdTavoli = setInterval(()=>{
       this.django.getData(this.url_tavoli).subscribe((data: any) =>{
-        this.tavoli = data;
-        console.log(this.tavoli);
-
+        if(!this.genericService.arraysAreEqual(data,this.tavoli)){
+          this.tavoli = data;
+          console.log(this.tavoli);
+        }
+        
       });
     }, this.freq);
     

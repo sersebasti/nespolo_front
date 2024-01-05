@@ -1,3 +1,4 @@
 
 <app-tavolo [freq]="freq" (sendTavoloData)="getTavoloData($event)"  *ngIf="tavoliVisible"></app-tavolo>
 <app-commanda [freq]="freq" [dataTavolo]="dataTavolo"  (ToTavoli)="goToTavoli($event)" *ngIf="commandaVisible"></app-commanda>
+<app-pizzeria  *ngIf="pizzeriaVisible"></app-pizzeria>
