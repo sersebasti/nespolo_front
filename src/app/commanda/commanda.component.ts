@@ -15,18 +15,20 @@ import { GenericService } from '../servizi/generic.service';
 
 export class CommandaComponent {
   @Input() freq: any;
+
   @Input() dataTavolo: any;
   @Output() ToTavoli = new EventEmitter<boolean>();
   
+  //mostra e nasconde gli ordini durante la modifica delle info dei prodotti selezionati
   ordiniVisible: boolean | undefined;
+
   products: Product[] = [];
   commanda: Commanda[] = [];
   selected_commanda: Commanda[] = [];
   filtered_products: Product[] = [];
   selected_product: Product[] = [];
-  numericValue: number = 1
-  altro_reparto: number | undefined
-  //noCerca: boolean = true
+
+  //mostra e nasconde il dati durante la ricerca prodotti
   cercaVisible: boolean = false
   
   intervalIdOrdinazioni: undefined | ReturnType<typeof setTimeout>;
@@ -34,7 +36,7 @@ export class CommandaComponent {
   url_main: string = 'http://localhost:8000/commanda/';
   url_ordinazione: string = "http://localhost:8000/commanda/commande/tavolo/"
   url_commande: string = 'http://localhost:8000/commanda/commande/';
-  url_tavolo_no_complete: string;
+  url_tavolo_no_status: string;
 
 
   constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService){
@@ -46,23 +48,21 @@ export class CommandaComponent {
     });
 
     
-    this.url_tavolo_no_complete = "";
+    this.url_tavolo_no_status = "";
   }
   
-
-  displayedColumns: string[] = ['product', 'quantity', 'production_status'];
-
-  
   ngOnInit(): void {
-    // Identifico il tavolo
-    console.log(this.dataTavolo)
-    this.url_tavolo_no_complete = this.url_main + "commanda_tavolo_nostatus/?tavolo=" + this.dataTavolo.id + "&production_status=D";
 
     this.ordiniVisible = true
 
-    // Acquisico Ordinazioni dal servizio django - freq (ms)
+    // Identifico il tavolo
+    console.log(this.dataTavolo)
 
-    this.django.getData(this.url_tavolo_no_complete).subscribe((data: any) =>{
+    //acquisico tutte gli elementi commanda eccetto quelli in stato D = 'Servito'
+    this.url_tavolo_no_status = this.url_main + "commanda_tavolo_nostatus/?tavolo=" + this.dataTavolo.id + "&production_status=D";
+    
+    // Acquisico Ordinazioni dal servizio django - freq (ms)
+    this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
       this.commanda = data;
     });
     
@@ -71,7 +71,7 @@ export class CommandaComponent {
     this.intervalIdOrdinazioni = setInterval(()=>{
 
     
-      this.django.getData(this.url_tavolo_no_complete).subscribe((data: any) =>{
+      this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
 
         if(!this.genericService.arraysAreEqual(data, this.commanda)){
           console.log(this.commanda);
@@ -97,19 +97,22 @@ export class CommandaComponent {
   cercaProdotto(event:any): any{
     this.cercaVisible = true
     
-    //this.noCerca = false
     let inputElement = event.target as HTMLInputElement;
-    
-    // Now you can use inputElement as an HTMLElement
     console.log('Input value:' + inputElement.value.length, inputElement.value);
 
-    if (inputElement.value.length >= 2){
-      this.filtered_products = this.products.filter((product: Product) => product.title.toLowerCase().includes(inputElement.value.toLowerCase()))
-      console.log(this.filtered_products) 
-    }
-    else{
-      this.filtered_products = []
-    }
+    let arr_input = inputElement.value.split(' ')
+    this.filtered_products = this.products
+    let count = 0
+    arr_input.forEach(searchStr => {
+      if (searchStr.length >= 2){
+        count = count + 1
+        this.filtered_products = this.filtered_products.filter((product: Product) => product.title.toLowerCase().includes(searchStr.toLowerCase()))
+        console.log(this.filtered_products) 
+      }
+    });
+    
+    if(count == 0){this.filtered_products = []}
+
     return this.filtered_products
   }
 
@@ -142,7 +145,7 @@ export class CommandaComponent {
     // Insert new product commanda
     this.django.doCreate(this.url_commande, body).subscribe((response: any) => {
             console.log(JSON.stringify(response));
-            this.django.getData(this.url_tavolo_no_complete).subscribe((data: any) =>{
+            this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
               this.commanda = data;
               console.log(data);
               
@@ -172,7 +175,7 @@ export class CommandaComponent {
   remove(element: any){
     this.django.deleteData(this.url_commande + element.id + "/").subscribe((data: any) =>{
 
-      this.django.getData(this.url_tavolo_no_complete).subscribe((data: any) =>{
+      this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
         this.commanda = data;
         console.log(data);
       });
@@ -200,7 +203,7 @@ export class CommandaComponent {
 
     this.django.doModify(this.url_commande + data.id + "/", body).subscribe((data: any) =>{
 
-      this.django.getData(this.url_tavolo_no_complete).subscribe((data: any) =>{
+      this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
         this.commanda = data;
         console.log(data);
         this.ordiniVisible = true
@@ -225,7 +228,7 @@ export class CommandaComponent {
     }
 
     this.django.doModify(this.url_commande + data.id + "/", body).subscribe((data: any) =>{
-      this.django.getData(this.url_tavolo_no_complete).subscribe((data: any) =>{
+      this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
         this.commanda = data;
         console.log(data);
       });
@@ -256,5 +259,3 @@ export interface Commanda{
   production_status: string;
   note: string;
 }
-
-

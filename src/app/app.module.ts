@@ -23,6 +23,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { HttpClientModule } from '@angular/common/http';
 import { CommandaComponent } from './commanda/commanda.component';
 import { PizzeriaComponent } from './pizzeria/pizzeria.component';
+import { CucinaComponent } from './cucina/cucina.component';
+
+
+
 
 
 @NgModule({
@@ -30,7 +34,8 @@ import { PizzeriaComponent } from './pizzeria/pizzeria.component';
     AppComponent,
     TavoloComponent,
     CommandaComponent,
-    PizzeriaComponent
+    PizzeriaComponent,
+    CucinaComponent
   ],
   imports: [
     BrowserModule,

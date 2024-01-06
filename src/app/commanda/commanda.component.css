@@ -43,6 +43,7 @@
     background-color: white;
     padding: 5px;
     font-size: 20px;
+    display: flex;
     
     position: fixed;
     left: 50%;
@@ -140,6 +141,7 @@
 
 fieldset{
     border: black;
+
 }
 
 .example-radio-group{

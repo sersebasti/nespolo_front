@@ -11,8 +11,14 @@
     </mat-chip-listbox>
   </fieldset>
 
-  <div  class="bottom-flex-container">
+  <div  class="bottom-flex-container-1">
     <!-- fa fare div  [ngClass]="{'bottom-flex-container': !molti_tav, 'bottom-flex-container_bis': molti_tav}"-->
     <input class="legend_add_tavoli" matInput placeholder="Nuovo Tavolo" (keydown)="onEnterKeyPressed($event)" style="border-radius: 30px">
   </div>
+
+  <div  class="bottom-flex-container-2">
+      <a mat-button class="my_buttons"  (click)="toLogin($event)"><< Login</a>    
+  </div>
+
+
 </div>

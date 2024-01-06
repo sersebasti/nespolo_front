@@ -3,13 +3,12 @@ import { DjangoService } from '../servizi/django.service';
 import { DataService } from '../servizi/data.service';
 import { GenericService } from '../servizi/generic.service';
 
-
 @Component({
-  selector: 'app-pizzeria',
-  templateUrl: './pizzeria.component.html',
-  styleUrl: './pizzeria.component.css'
+  selector: 'app-cucina',
+  templateUrl: './cucina.component.html',
+  styleUrl: './cucina.component.css'
 })
-export class PizzeriaComponent {
+export class CucinaComponent {
   @Input() freq: any;
   @Output() ToLogin = new EventEmitter<boolean>();
 
@@ -27,18 +26,17 @@ export class PizzeriaComponent {
     this.url_collection_status = "";
   }
 
-
   ngOnInit(): void {
-
-    console.log("on init")
+    
     /*
     collection_id:
     1 -> Pizzeria
     2 -> Cucina
     3 -> Bar
     */
+
     // Acquisico le pizze da fare dal servizio django - freq (ms)
-    this.url_collection_status = this.url_main + "commanda_collection_status/?product_collection_id=1&production_status=B";
+    this.url_collection_status = this.url_main + "commanda_collection_status/?product_collection_id=2&production_status=B";
   
     this.django.getData(this.url_collection_status).subscribe((data: any) =>{
       this.commanda = data;
@@ -46,7 +44,6 @@ export class PizzeriaComponent {
 
     this.intervalIdOrdinazioni = setInterval(()=>{
 
-    
       this.django.getData(this.url_collection_status).subscribe((data: any) =>{
 
         if(!this.genericService.arraysAreEqual(data, this.commanda)){
@@ -57,8 +54,6 @@ export class PizzeriaComponent {
 
       });
     }, this.freq);
-
-
     
   }
 
@@ -109,8 +104,8 @@ export class PizzeriaComponent {
     console.log("toLogin")
     this.ToLogin.emit(true)
   }
-
 }
+
 
 
 export interface Commanda{

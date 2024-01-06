@@ -66,43 +66,20 @@
         <div class="centered-row">
           <button mat-button class="salva" (click)="aggiornaElementoCommanda(selected_commanda[0])">Salva</button>
         </div>
-         
-
       <!--button class="close-button" (click)="closeModificaElementoCommanda()">x</button-->  
       </fieldset>
 
   
     </div>
-    <!--fieldset>
-      <div class="centered-row">
-          <mat-icon class="center-icon">keyboard_arrow_down</mat-icon>
-      </div>
-    </fieldset-->
     <hr>
-    <!--div class="down-container">
-      <fieldset>
-        <legend>Completati</legend>
-        <mat-chip-set aria-label="Orinazioni Fatte">
-          <div *ngFor='let element of commanda'>
-            <mat-chip *ngIf="element.production_status == 'C'">        
-              <div [className]="element.production_status" (click)="modificaElementoCommanda(element)">{{element.product_title }} ({{ element.quantity }}) {{element.note}}</div>
-          </mat-chip>
-          </div>
-        </mat-chip-set>
-
-      </fieldset>
-      
-    </div-->
-    
-
- 
   
     <div  class="bottom-flex-container-1">
       <input id="searchInputField" class="legend_add_prodotto centered-element" matInput placeholder="Cerca prodotto"  style="border-radius: 30px" (input)="cercaProdotto($event)" (keydown.enter)=" onSelectedProductEnter($event)"> 
     </div>
-    <div  class="bottom-flex-container-2" style="display: flex;">
-        <a mat-button class="bottom-flex-container my_buttons"  (click)="toTavoli($event)"><< Tavoli</a>
-        <a mat-button class="bottom-flex-container my_buttons"  (click)="toTavoli($event)">Conto >></a>      
+
+    <div  class="bottom-flex-container-2">
+        <a mat-button class="my_buttons"  (click)="toTavoli($event)"><< Tavoli</a>
+        <a mat-button class="my_buttons"  (click)="toTavoli($event)">Conto >></a>      
     </div>
 
    

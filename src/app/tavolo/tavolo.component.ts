@@ -13,6 +13,7 @@ import { GenericService } from '../servizi/generic.service';
 export class TavoloComponent {
   @Input() freq: any;
   @Output() sendTavoloData = new EventEmitter<string>();
+  @Output() ToLogin = new EventEmitter<boolean>();
   
  
   url_tavoli: string = 'http://localhost:8000/commanda/tavoli/';
@@ -119,6 +120,11 @@ export class TavoloComponent {
     //Called after ngAfterContentInit when the component's view has been initialized. Applies to components only.
     //Add 'implements AfterViewInit' to the class.
     //console.log("ngAfterViewInit");
+  }
+
+  toLogin(data: any){
+      console.log("toLogin")
+      this.ToLogin.emit(true)
   }
 
  
