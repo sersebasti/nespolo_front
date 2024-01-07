@@ -92,35 +92,20 @@ export class TavoloComponent {
    this.sendTavoloData.emit(JSON.stringify(event))
   }
 
+    //remove(element: any){this.commandaComponent.remove(element)}
+    remove(element: any){
+      
+      this.django.deleteData(this.url_tavoli + element.id + "/").subscribe((data: any) =>{
   
-  ngAfterContentInit(): void {
-    //Called after ngOnInit when the component's or directive's content has been initialized.
-    //Add 'implements AfterContentInit' to the class.
-    //console.log("ngAfterTavoloContentInit");
-  }
-  ngAfterContentChecked(): void {
-    //Called after every check of the component's or directive's content.
-    //Add 'implements AfterContentChecked' to the class.
-    //console.log("ngAfterContentChecked");
-  }
+        // Update Tavoli
+        this.django.getData(this.url_tavoli).subscribe((data: any) =>{
+          this.tavoli = data;
+        });
+        
+      });
+      
+    }
 
-  ngDoCheck(): void {
-    //Called every time that the input properties of a component or a directive are checked. Use it to extend change detection by performing a custom check.
-    //Add 'implements DoCheck' to the class.
-    //console.log("ngDoCheck");
-    
-  }
-
-  ngOnDestroy(): void {
-    console.log("ngOnTavoloDestroy");
-    clearInterval(this.intervalIdTavoli);
-  }
-
-  ngAfterViewInit(): void {
-    //Called after ngAfterContentInit when the component's view has been initialized. Applies to components only.
-    //Add 'implements AfterViewInit' to the class.
-    //console.log("ngAfterViewInit");
-  }
 
   toLogin(data: any){
       console.log("toLogin")

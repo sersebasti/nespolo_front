@@ -25,7 +25,7 @@
 }
 
 .bottom-flex-container-1 {
-    background-color: #41c0ba;
+    background-color: white;
     padding: 5px;
     font-size: 30px;
     
@@ -187,4 +187,23 @@ fieldset{
     background-color: transparent;
     font-weight: bold;
     font-style: oblique;
+}
+
+/* Add custom styles to reduce padding between rows */
+.custom-table {
+    &.mat-table {
+      tr.mat-row {
+        height: 32px; /* Adjust the row height as needed */
+      }
+  
+      td.mat-cell, th.mat-header-cell {
+        padding: 4px 8px; /* Adjust the cell padding as needed */
+      }
+    }
+  }
+
+  /* Add custom styles to enable scrolling */
+.table-container {
+    max-height: 400px; /* Adjust the max height as needed */
+    overflow-y: auto;
 }

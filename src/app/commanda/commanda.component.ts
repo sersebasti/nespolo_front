@@ -5,6 +5,7 @@ import { GenericService } from '../servizi/generic.service';
 
 //import { Product } from './product.interface.ts'; 
 
+
 @Component({
   selector: 'app-commanda',
   templateUrl: './commanda.component.html',
@@ -12,15 +13,17 @@ import { GenericService } from '../servizi/generic.service';
 })
 
 
-
 export class CommandaComponent {
   @Input() freq: any;
 
   @Input() dataTavolo: any;
   @Output() ToTavoli = new EventEmitter<boolean>();
+
   
   //mostra e nasconde gli ordini durante la modifica delle info dei prodotti selezionati
   ordiniVisible: boolean | undefined;
+  contoVisible: boolean | undefined;
+  conto_tot: number | undefined
 
   products: Product[] = [];
   commanda: Commanda[] = [];
@@ -28,15 +31,21 @@ export class CommandaComponent {
   filtered_products: Product[] = [];
   selected_product: Product[] = [];
 
+  elementiConto: Conto[] = [];
+  displayedColumns: string[] = ['product__title', 'total_quantity', 'total_price'];
+
+
   //mostra e nasconde il dati durante la ricerca prodotti
   cercaVisible: boolean = false
   
   intervalIdOrdinazioni: undefined | ReturnType<typeof setTimeout>;
   
   url_main: string = 'http://localhost:8000/commanda/';
-  url_ordinazione: string = "http://localhost:8000/commanda/commande/tavolo/"
+  url_ordinazione: string = "http://localhost:8000/commanda/commanda/tavolo/"
   url_commande: string = 'http://localhost:8000/commanda/commande/';
   url_tavolo_no_status: string;
+
+
 
 
   constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService){
@@ -54,6 +63,7 @@ export class CommandaComponent {
   ngOnInit(): void {
 
     this.ordiniVisible = true
+    this.contoVisible = false
 
     // Identifico il tavolo
     console.log(this.dataTavolo)
@@ -104,7 +114,7 @@ export class CommandaComponent {
     this.filtered_products = this.products
     let count = 0
     arr_input.forEach(searchStr => {
-      if (searchStr.length >= 2){
+      if (searchStr.length >= 3){
         count = count + 1
         this.filtered_products = this.filtered_products.filter((product: Product) => product.title.toLowerCase().includes(searchStr.toLowerCase()))
         console.log(this.filtered_products) 
@@ -113,7 +123,7 @@ export class CommandaComponent {
     
     if(count == 0){this.filtered_products = []}
 
-    return this.filtered_products
+    return [this.filtered_products, arr_input[arr_input.length-1]]
   }
 
   checkInput(products: any, str: string) {
@@ -123,24 +133,34 @@ export class CommandaComponent {
   
   onSelectedProductEnter(event: any){
     console.log(event)
-    this.selected_product = this.cercaProdotto(event);
+    
+    this.selected_product = this.cercaProdotto(event)[0];
     if(this.selected_product.length == 1){
        console.log("ok un solo prodotto rimasto: " + this.selected_product[0].title)
-       this.add_product_pending(this.selected_product[0])
+       console.log("ultima stinga di ricerca è: " + this.cercaProdotto(event)[1])
+       this.add_product_pending(this.selected_product[0], this.cercaProdotto(event)[1])
     }
 
   }
 
   onSelectedProductChip(sel_product: any){
     console.log("ok selezionato prodotto: " + sel_product.title)
-    this.add_product_pending(sel_product)
+    this.add_product_pending(sel_product, "1")
   }
 
-  add_product_pending(product_to_add: any){
+  add_product_pending(product_to_add: any, last_str: string){
+    
+    let quantity = 1
+    // se per ultimo ho digitato un numero inserico quel numoro di prodotti
+    let parsedValue = parseInt(last_str, 10);
+    if(!isNaN(parsedValue) && Number.isInteger(parsedValue) && parsedValue > 0){
+       quantity = parsedValue
+    }
+
     let body =   {
       "tavolo": this.dataTavolo.id,
       "product": product_to_add.id,
-      "quantity": 1
+      "quantity": quantity
     }
     // Insert new product commanda
     this.django.doCreate(this.url_commande, body).subscribe((response: any) => {
@@ -188,20 +208,20 @@ export class CommandaComponent {
     console.log(event.value)
   }
   
-  aggiornaElementoCommanda(data: any){
-
+  aggiornaElementoCommanda(){
+    
     var body =
     {
-      "id": data.id,
-      "tavolo": data.tavolo,
-      "product": data.product,
-      "product_title": data.product_title,
-      "quantity": data.quantity,
-      "production_status": data.production_status,
-      "note": data.note
+      "id": this.selected_commanda[0].id,
+      "tavolo": this.selected_commanda[0].tavolo,
+      "product": this.selected_commanda[0].product,
+      "product_title": this.selected_commanda[0].product_title,
+      "quantity": this.selected_commanda[0].quantity,
+      "production_status": this.selected_commanda[0].production_status,
+      "note": this.selected_commanda[0].note
     }
 
-    this.django.doModify(this.url_commande + data.id + "/", body).subscribe((data: any) =>{
+    this.django.doModify(this.url_commande +  this.selected_commanda[0].id + "/", body).subscribe((data: any) =>{
 
       this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
         this.commanda = data;
@@ -215,23 +235,34 @@ export class CommandaComponent {
 
   change_production_status(data: any, status: any){
 
-    var body =
-    {
-      "id": data.id,
-      "tavolo": data.tavolo,
-      "product": data.product,
-      "product_title": data.product_title,
-      "product_collection_id": data.product_collection_id,
-      "quantity": data.quantity,
-      "production_status": status,
-      "note": data.note
-    }
+    var body ={"production_status": status}
 
     this.django.doModify(this.url_commande + data.id + "/", body).subscribe((data: any) =>{
       this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
         this.commanda = data;
         console.log(data);
+         if(status = 'D' && this.contoVisible){this.conto('no-toggle')}
       });
+    });
+
+  }
+
+  conto(str: any){
+    if(str == 'toggle'){this.contoVisible = !this.contoVisible}
+
+    var url_tavolo_status = this.url_main + "commanda_elementi_conto/?tavolo=" + this.dataTavolo.id
+    this.django.getData(url_tavolo_status).subscribe((data: any) =>{
+      this.elementiConto = data
+      
+      var total = 0
+      this.elementiConto.forEach(element => {
+        total = total  + parseFloat(element.total_price)
+        console.log(parseFloat(element.total_price))
+      });
+      this.conto_tot  = total
+
+      //this.conto_tot = parseInt(this.conto['tot_price'],10).reduce((sum, product) => sum + product.price, 0);
+      console.log(data);
     });
 
   }
@@ -254,8 +285,15 @@ export interface Commanda{
   tavolo: number;
   product: number;
   product_title: string;
+  product_price: number;
   product_collection_id: number;
   quantity: number;
   production_status: string;
   note: string;
+}
+
+export interface Conto{
+  title: string;
+  total_quantity: number;
+  total_price: string;
 }

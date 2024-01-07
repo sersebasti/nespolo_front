@@ -14,7 +14,7 @@ export class DjangoService {
   }
 
   doModify(url: string, body: {}) {
-    return this.http.put(url, body)
+    return this.http.patch(url, body)
   }
 
   getData(url: string){

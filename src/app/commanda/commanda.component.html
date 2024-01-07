@@ -30,7 +30,7 @@
           <mat-chip>        
             <div [className]="element.production_status" (click)="modificaElementoCommanda(element)">{{element.product_title }} ({{ element.quantity }}) {{element.note}}</div>
             <img *ngIf="element.production_status == 'A'" matChipRemove src="../../assets/images/icons8-delete-30.png" alt="delete" (click)="remove(element)"/>
-            <img *ngIf="element.production_status == 'A'" matChipRemove src="../../assets/images/send_icon.png" alt="toProduzione" (click)="change_production_status(element,'B')"/>
+            <img *ngIf="element.production_status == 'A' && element.product_collection_id != 3" matChipRemove src="../../assets/images/send_icon.png" alt="toProduzione" (click)="change_production_status(element,'B')"/>
             <img *ngIf="element.product_collection_id == 3 || element.production_status == 'C'" matChipRemove src="../../assets/images/check.png" alt="complete" (click)="change_production_status(element,'D')"/>
             <img *ngIf="element.production_status == 'B'" matChipRemove src="../../assets/images/gear.png" alt="InProduzione"/>
         </mat-chip>
@@ -43,7 +43,7 @@
       <fieldset  *ngIf="!ordiniVisible">
         <p>Titolo: {{ selected_commanda[0].product_title }}</p>
         <hr>
-          <p>Quantità: <input [(ngModel)]="selected_commanda[0].quantity" type="number" placeholder="Enter a number" /></p>
+          <p>Quantità: <input [(ngModel)]="selected_commanda[0].quantity" type="number" placeholder="Enter a number" (keydown.enter)="aggiornaElementoCommanda()"/></p>
           <div style="max-height: 200px; overflow: auto;">
             <mat-grid-list cols="3" rowHeight="50px">
               <mat-grid-tile><mat-radio-button value="1" [checked]="selected_commanda[0].quantity == 1" (change)="upDateRadio($event)">1</mat-radio-button></mat-grid-tile>
@@ -60,26 +60,64 @@
         <hr>
 
         <p>Nota:</p>
-        <textarea [(ngModel)]="selected_commanda[0].note" rows="3" maxlength="2000" placeholder="" class="custom-textarea"></textarea>
+        <textarea [(ngModel)]="selected_commanda[0].note" rows="3" maxlength="2000" placeholder="" class="custom-textarea" (keydown.enter)="aggiornaElementoCommanda()"></textarea>
         <hr>
 
         <div class="centered-row">
-          <button mat-button class="salva" (click)="aggiornaElementoCommanda(selected_commanda[0])">Salva</button>
+          <button mat-button class="salva" (click)="aggiornaElementoCommanda()">Salva</button>
         </div>
       <!--button class="close-button" (click)="closeModificaElementoCommanda()">x</button-->  
       </fieldset>
 
   
     </div>
+    
     <hr>
-  
+    <div *ngIf="contoVisible">
+        <p class="legend_commanda">Conto: {{conto_tot}} &#8364;</p>
+      
+        <div class="table-container">
+          <table mat-table [dataSource]="elementiConto" class="mat-elevation-z8 custom-table">
+    
+            <!--- Note that these columns can be defined in any order.
+                  The actual rendered columns are set as a property on the row definition" -->
+          
+            <!-- Position Column -->
+            <ng-container matColumnDef="product__title">
+              <th mat-header-cell *matHeaderCellDef>Prodotto</th>
+              <td mat-cell *matCellDef="let element"> {{element.product__title}} </td>
+            </ng-container>
+          
+            <!-- Name Column -->
+            <ng-container matColumnDef="total_quantity">
+              <th mat-header-cell *matHeaderCellDef>N</th>
+              <td mat-cell *matCellDef="let element"> {{element.total_quantity}}</td>
+            </ng-container>
+          
+            <!-- Weight Column -->
+            <ng-container matColumnDef="total_price">
+              <th mat-header-cell *matHeaderCellDef>&#8364;</th>
+              <td mat-cell *matCellDef="let element"> {{element.total_price}} </td>
+            </ng-container>
+          
+      
+    
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+          </div>
+    </div>
+
+    <hr>
+
+
     <div  class="bottom-flex-container-1">
       <input id="searchInputField" class="legend_add_prodotto centered-element" matInput placeholder="Cerca prodotto"  style="border-radius: 30px" (input)="cercaProdotto($event)" (keydown.enter)=" onSelectedProductEnter($event)"> 
     </div>
 
     <div  class="bottom-flex-container-2">
         <a mat-button class="my_buttons"  (click)="toTavoli($event)"><< Tavoli</a>
-        <a mat-button class="my_buttons"  (click)="toTavoli($event)">Conto >></a>      
+        <a mat-button class="my_buttons"  (click)="conto('toggle')"><label *ngIf="!contoVisible">Conto</label><label *ngIf="contoVisible">X</label></a>      
     </div>
 
    

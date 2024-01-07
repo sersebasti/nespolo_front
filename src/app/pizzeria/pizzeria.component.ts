@@ -49,11 +49,7 @@ export class PizzeriaComponent {
     
       this.django.getData(this.url_collection_status).subscribe((data: any) =>{
 
-        if(!this.genericService.arraysAreEqual(data, this.commanda)){
-          console.log(this.commanda);
-          this.commanda = data;
-          console.log("aggiornato commanda")
-        }
+        if(!this.genericService.arraysAreEqual(data, this.commanda)){this.commanda = data;}
 
       });
     }, this.freq);
@@ -79,17 +75,7 @@ export class PizzeriaComponent {
   //change_production_status(data: any, status: any){this.commandaComponent.change_production_status(data, status)}
   change_production_status(data: any, status: any){
 
-    var body =
-    {
-      "id": data.id,
-      "tavolo": data.tavolo,
-      "product": data.product,
-      "product_title": data.product_title,
-      "product_collection_id": data.product_collection_id,
-      "quantity": data.quantity,
-      "production_status": status,
-      "note": data.note
-    }
+    var body ={"production_status": status}
 
     this.django.doModify(this.url_commande + data.id + "/", body).subscribe((data: any) =>{
       this.django.getData(this.url_collection_status).subscribe((data: any) =>{
@@ -115,11 +101,12 @@ export class PizzeriaComponent {
 
 export interface Commanda{
   id: number;
-  tavolo: number;
-  product: number;
-  product_title: string;
-  product_collection_id: number;
   quantity: number;
+  product_id: number;
+  tavolo_id: number;
   production_status: string;
   note: string;
+  product__collection_id: number;
+  product__title: string;
+  tavolo__nome: string
 }
