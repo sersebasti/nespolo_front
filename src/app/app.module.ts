@@ -51,7 +51,7 @@ import { CucinaComponent } from './cucina/cucina.component';
     MatRadioModule,
     MatGridListModule,
     MatFormFieldModule,
-    HttpClientModule
+    HttpClientModule,
   ],
   providers: [    
     // Use the custom theme for all form fields
