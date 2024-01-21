@@ -15,15 +15,19 @@ export class PizzeriaComponent {
 
   commanda: Commanda[] = [];
 
-  url_main: string = 'http://localhost:8000/commanda/';
-  url_commande: string = 'http://localhost:8000/commanda/commande/';
+
   url_collection_status: string;
 
   intervalIdOrdinazioni: undefined | ReturnType<typeof setTimeout>;
+  
+
+  url_main: string | undefined
+  url_commande: string | undefined
 
   constructor(private django: DjangoService, private dataService: DataService, 
     private genericService: GenericService){
-
+    
+    this.url_main  = dataService.url_main
     this.url_collection_status = "";
   }
 
@@ -61,7 +65,7 @@ export class PizzeriaComponent {
 
   //remove(element: any){this.commandaComponent.remove(element)}
   remove(element: any){
-    this.django.deleteData(this.url_commande + element.id + "/").subscribe((data: any) =>{
+    this.django.deleteData(this.dataService.urls.commande + element.id + "/").subscribe((data: any) =>{
 
       this.django.getData(this.url_collection_status).subscribe((data: any) =>{
         this.commanda = data;
@@ -77,7 +81,7 @@ export class PizzeriaComponent {
 
     var body ={"production_status": status}
 
-    this.django.doModify(this.url_commande + data.id + "/", body).subscribe((data: any) =>{
+    this.django.doModify(this.dataService.urls.commande + data.id + "/", body).subscribe((data: any) =>{
       this.django.getData(this.url_collection_status).subscribe((data: any) =>{
         this.commanda = data;
         console.log(data);

@@ -15,13 +15,7 @@ export class TavoloComponent {
   @Output() sendTavoloData = new EventEmitter<string>();
   @Output() ToLogin = new EventEmitter<boolean>();
   
- 
-  url_tavoli: string = 'http://localhost:8000/commanda/tavoli/';
-  url_products: string = 'http://localhost:8000/commanda/products/';
 
-  //@Input() url_tavoli: any;
-  //@Input() url_products: any; 
-  
   products: any;
   tavoli: any;
 
@@ -32,21 +26,22 @@ export class TavoloComponent {
   // da fare: se ci sono molti tavoli il bottone su deve spostare più in basso
   //molti_tav = false
 
-  constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService){}
+  constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService){
+  }
   
   ngOnInit(): void {
-   
+    
 
     // Get Tavoli
     console.log("ngOndTavoloInit");
-    this.django.getData(this.url_tavoli).subscribe((data: any) =>{
+    this.django.getData(this.dataService.urls.tavoli).subscribe((data: any) =>{
       this.tavoli = data;
       console.log(data)
     });
     
     // Update Tavoli - freq (ms)
     this.intervalIdTavoli = setInterval(()=>{
-      this.django.getData(this.url_tavoli).subscribe((data: any) =>{
+      this.django.getData(this.dataService.urls.tavoli).subscribe((data: any) =>{
         if(!this.genericService.arraysAreEqual(data,this.tavoli)){
           this.tavoli = data;
           console.log(this.tavoli);
@@ -56,7 +51,7 @@ export class TavoloComponent {
     }, this.freq);
     
     // Get Products
-    this.django.getData(this.url_products).subscribe((data: any) =>{
+    this.django.getData(this.dataService.urls.products).subscribe((data: any) =>{
       this.products = data;
       console.log(this.products);
       //send poducts to data service as json file
@@ -74,11 +69,11 @@ export class TavoloComponent {
       this.inputData = (<HTMLInputElement>event.target).value
 
       // Insert new element Tavolo
-      this.django.doCreate(this.url_tavoli,{"nome": this.inputData}).subscribe((response: any) => {
+      this.django.doCreate(this.dataService.urls.tavoli,{"nome": this.inputData}).subscribe((response: any) => {
         console.log(JSON.stringify(response));
         
         // Update Tavoli
-        this.django.getData(this.url_tavoli).subscribe((data: any) =>{
+        this.django.getData(this.dataService.urls.tavoli).subscribe((data: any) =>{
           this.tavoli = data;
         });
 
@@ -95,10 +90,13 @@ export class TavoloComponent {
     //remove(element: any){this.commandaComponent.remove(element)}
     remove(element: any){
       
-      this.django.deleteData(this.url_tavoli + element.id + "/").subscribe((data: any) =>{
-  
+      console.log("rimuovo tavolo:" + this.dataService.urls.tavoli + element.id + "/")
+
+      this.django.deleteData(this.dataService.urls.tavoli + element.id + "/").subscribe((data: any) =>{
+         
+        
         // Update Tavoli
-        this.django.getData(this.url_tavoli).subscribe((data: any) =>{
+        this.django.getData(this.dataService.urls.tavoli).subscribe((data: any) =>{
           this.tavoli = data;
         });
         

@@ -6,7 +6,7 @@ import { Component } from '@angular/core';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  freq: number = 1000
+  freq: number = 2000
   userType: string | undefined
   check: boolean = false
   
@@ -21,7 +21,7 @@ export class AppComponent {
 
   selectedOption: string | undefined;
 
-  ruoli: string[] = ['Cameriere', 'Pizzaiolo', 'Cuoco'];
+  ruoli: string[] = ['Sala', 'Pizzeria', 'Cucina'];
 
   ngOnInit(): void {
     
@@ -60,13 +60,13 @@ export class AppComponent {
     this.loginVisible = false
 
     switch (this.selectedOption) {
-      case "Cameriere":
+      case "Sala":
         this.tavoliVisible = true
         break;
-      case 'Pizzaiolo':
+      case 'Pizzeria':
         this.pizzeriaVisible = true
         break;
-      case 'Cuoco':
+      case 'Cucina':
         this.cucinaVisible = true
         break;
     }
@@ -83,6 +83,4 @@ export class AppComponent {
     this.selectedOption = ''
   }
   
-
-
 }

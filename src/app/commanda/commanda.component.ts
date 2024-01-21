@@ -40,13 +40,14 @@ export class CommandaComponent {
   
   intervalIdOrdinazioni: undefined | ReturnType<typeof setTimeout>;
   
-  url_main: string = 'http://localhost:8000/commanda/';
-  url_ordinazione: string = "http://localhost:8000/commanda/commanda/tavolo/"
-  url_commande: string = 'http://localhost:8000/commanda/commande/';
-  url_tavolo_no_status: string;
+  url_main: string | undefined
+  url_products: string | undefined
+  url_commande: string | undefined
+  url_tavoli: string | undefined
+  url_ordinazione: string | undefined
+  url_tavolo_no_status: string = '';
 
-
-
+  
 
   constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService){
 
@@ -55,12 +56,13 @@ export class CommandaComponent {
       this.products = JSON.parse(data)
       console.log(this.products) 
     });
-
     
-    this.url_tavolo_no_status = "";
+
   }
   
   ngOnInit(): void {
+    
+    this.url_main  = this.dataService.urls.main
 
     this.ordiniVisible = true
     this.contoVisible = false
@@ -163,7 +165,7 @@ export class CommandaComponent {
       "quantity": quantity
     }
     // Insert new product commanda
-    this.django.doCreate(this.url_commande, body).subscribe((response: any) => {
+    this.django.doCreate(this.dataService.urls.commande, body).subscribe((response: any) => {
             console.log(JSON.stringify(response));
             this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
               this.commanda = data;
@@ -193,7 +195,9 @@ export class CommandaComponent {
   }
 
   remove(element: any){
-    this.django.deleteData(this.url_commande + element.id + "/").subscribe((data: any) =>{
+    console.log('qui')
+    console.log('qui' + this.dataService.urls.commande + element.id + "/")
+    this.django.deleteData(this.dataService.urls.commande + element.id + "/").subscribe((data: any) =>{
 
       this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
         this.commanda = data;
@@ -221,7 +225,7 @@ export class CommandaComponent {
       "note": this.selected_commanda[0].note
     }
 
-    this.django.doModify(this.url_commande +  this.selected_commanda[0].id + "/", body).subscribe((data: any) =>{
+    this.django.doModify(this.dataService.urls.commande +  this.selected_commanda[0].id + "/", body).subscribe((data: any) =>{
 
       this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
         this.commanda = data;
@@ -237,7 +241,7 @@ export class CommandaComponent {
 
     var body ={"production_status": status}
 
-    this.django.doModify(this.url_commande + data.id + "/", body).subscribe((data: any) =>{
+    this.django.doModify(this.dataService.urls.commande + data.id + "/", body).subscribe((data: any) =>{
       this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
         this.commanda = data;
         console.log(data);
@@ -297,3 +301,4 @@ export interface Conto{
   total_quantity: number;
   total_price: string;
 }
+
