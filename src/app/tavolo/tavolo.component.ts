@@ -59,6 +59,11 @@ export class TavoloComponent {
     });
   }
 
+  ngOnDestroy(): void {
+    console.log("ngOnTavoloDestroy");
+    clearInterval(this.intervalIdTavoli);
+  }
+
 
   onEnterKeyPressed(event: KeyboardEvent): void {
     
@@ -108,6 +113,7 @@ export class TavoloComponent {
   toLogin(data: any){
       console.log("toLogin")
       this.ToLogin.emit(true)
+      clearInterval(this.intervalIdTavoli);
   }
 
  

@@ -6,8 +6,8 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class DataService {
   
-  //url_main: string = 'http://sersebasti.ddns.net/api/commanda/'
-  url_main: string = 'http://localhost:8000/commanda/'
+  url_main: string = 'http://sersebasti.ddns.net/commanda/'
+  //url_main: string = 'http://localhost:8000/commanda/'
   urls: { main: string; products: string; commande: string; tavoli: string; ordinazione: string; };
 
   constructor() {  
