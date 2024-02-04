@@ -31,6 +31,8 @@ export class TavoloComponent {
   
   ngOnInit(): void {
     
+    // Test 
+    //console.log("Test");
 
     // Get Tavoli
     console.log("ngOndTavoloInit");
@@ -42,10 +44,14 @@ export class TavoloComponent {
     // Update Tavoli - freq (ms)
     this.intervalIdTavoli = setInterval(()=>{
       this.django.getData(this.dataService.urls.tavoli).subscribe((data: any) =>{
+        
+        console.log(data)
+        
         if(!this.genericService.arraysAreEqual(data,this.tavoli)){
           this.tavoli = data;
           console.log(this.tavoli);
         }
+        
         
       });
     }, this.freq);

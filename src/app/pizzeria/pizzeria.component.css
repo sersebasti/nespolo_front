@@ -33,3 +33,12 @@ fieldset{
     margin: 0 auto;
     border-radius: 20px;
 }
+
+mat-chip  {
+    padding: 8px 12px; /* Adjust the padding as needed */
+}
+
+mat-chip button {
+    font-weight: bold;
+    font-size: 15px;
+}
