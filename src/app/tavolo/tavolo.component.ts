@@ -80,10 +80,15 @@ export class TavoloComponent {
         // Update Tavoli
         this.django.getData(this.dataService.urls.tavoli).subscribe((data: any) =>{
           this.tavoli = data;
+           
+          (<HTMLInputElement>event.target).blur();
+
         });
 
       });
 
+
+       
     }
   }
 

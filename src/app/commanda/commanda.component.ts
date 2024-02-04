@@ -134,6 +134,8 @@ export class CommandaComponent {
   
   
   onSelectedProductEnter(event: any){
+
+    (<HTMLInputElement>event.target).blur();
     console.log(event)
     
     this.selected_product = this.cercaProdotto(event)[0];
