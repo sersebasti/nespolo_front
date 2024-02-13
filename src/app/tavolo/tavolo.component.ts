@@ -22,6 +22,7 @@ export class TavoloComponent {
   intervalIdTavoli: undefined | ReturnType<typeof setTimeout>; 
   
   inputData: any;
+  coperti: any;
   
   // da fare: se ci sono molti tavoli il bottone su deve spostare più in basso
   //molti_tav = false
@@ -73,28 +74,39 @@ export class TavoloComponent {
 
   onEnterKeyPressed(event: KeyboardEvent): void {
     
+
     // Check if the pressed key is "Enter"
     if (event.key === 'Enter') {
-      
-      // Get input field value
-      this.inputData = (<HTMLInputElement>event.target).value
-
-      // Insert new element Tavolo
-      this.django.doCreate(this.dataService.urls.tavoli,{"nome": this.inputData}).subscribe((response: any) => {
-        console.log(JSON.stringify(response));
-        
-        // Update Tavoli
-        this.django.getData(this.dataService.urls.tavoli).subscribe((data: any) =>{
-          this.tavoli = data;
-           
-          (<HTMLInputElement>event.target).blur();
-
-        });
-
-      });
-
-
        
+      
+      // Acquisico numero coperti
+      this.coperti = prompt("Inserisci numero coperti:")
+      var intCoperti = parseInt(this.coperti);
+
+      // Check if the input is a valid integer
+      if (isNaN(intCoperti)) {
+      // Display the integer value
+      alert("Hai inserito: " + this.coperti);
+      } 
+      else{
+        
+        this.inputData = (<HTMLInputElement>event.target).value
+
+        // Insert new element Tavolo
+        this.django.doCreate(this.dataService.urls.tavoli,{"nome": this.inputData, "coperti": intCoperti}).subscribe((response: any) => {
+          console.log(JSON.stringify(response));
+          
+          // Update Tavoli
+          this.django.getData(this.dataService.urls.tavoli).subscribe((data: any) =>{
+            this.tavoli = data;
+             
+            (<HTMLInputElement>event.target).blur();
+  
+          });
+  
+        });
+      }
+
     }
   }
 
