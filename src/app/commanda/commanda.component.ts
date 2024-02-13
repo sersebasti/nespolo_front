@@ -21,12 +21,14 @@ export class CommandaComponent {
 
   
   //mostra e nasconde gli ordini durante la modifica delle info dei prodotti selezionati
-  ordiniVisible: boolean | undefined;
-  contoVisible: boolean | undefined;
+  ordiniVisible: boolean | undefined
+  contoVisible: boolean | undefined
   conto_tot: number | undefined
-
+  coperti: number | undefined 
+  
   products: Product[] = [];
   commanda: Commanda[] = [];
+
   selected_commanda: Commanda[] = [];
   filtered_products: Product[] = [];
   selected_product: Product[] = [];
@@ -43,11 +45,13 @@ export class CommandaComponent {
   url_main: string | undefined
   url_products: string | undefined
   url_commande: string | undefined
-  url_tavoli: string | undefined
+  url_tavolo: string | undefined
   url_ordinazione: string | undefined
   url_tavolo_no_status: string = '';
 
-  
+  prezzo_coperto: number = 1.5;
+  numero_coperti: number = 1;
+  title_coperti: string = "Coperti"
 
   constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService){
 
@@ -72,17 +76,18 @@ export class CommandaComponent {
 
     //acquisico tutte gli elementi commanda eccetto quelli in stato D = 'Servito'
     this.url_tavolo_no_status = this.url_main + "commanda_tavolo_nostatus/?tavolo=" + this.dataTavolo.id + "&production_status=D";
-    
-    // Acquisico Ordinazioni dal servizio django - freq (ms)
-    this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
-      this.commanda = data;
-    });
-    
-   
-    
-    this.intervalIdOrdinazioni = setInterval(()=>{
 
     
+    
+    // Acquisico Ordinazioni dal servizio django 
+    this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
+      console.log(data)
+      this.commanda = data;
+      
+    });
+
+    this.intervalIdOrdinazioni = setInterval(()=>{
+
       this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
 
         if(!this.genericService.arraysAreEqual(data, this.commanda)){
@@ -93,7 +98,7 @@ export class CommandaComponent {
 
       });
     }, this.freq);
-
+  
   }
 
   ngOnDestroy(): void {
@@ -255,20 +260,35 @@ export class CommandaComponent {
 
   conto(str: any){
     if(str == 'toggle'){this.contoVisible = !this.contoVisible}
+    
+    
+    // Acquisico Coperti dal servizio django 
+    this.url_tavolo = this.url_main + "tavoli/" + this.dataTavolo.id + "/";
+    this.django.getData(this.url_tavolo).subscribe((data: any) =>{
 
-    var url_tavolo_status = this.url_main + "commanda_elementi_conto/?tavolo=" + this.dataTavolo.id
-    this.django.getData(url_tavolo_status).subscribe((data: any) =>{
-      this.elementiConto = data
+      this.numero_coperti = data.coperti;
+      //var total = 0myArray.push(6);
+
+      //total = total + this.numero_coperti * this.prezzo_coperto;
       
-      var total = 0
-      this.elementiConto.forEach(element => {
-        total = total  + parseFloat(element.total_price)
-        console.log(parseFloat(element.total_price))
+      var url_tavolo_status = this.url_main + "commanda_elementi_conto/?tavolo=" + this.dataTavolo.id
+      this.django.getData(url_tavolo_status).subscribe((data: any) =>{
+        this.elementiConto = data
+        console.log(this.elementiConto);
+        this.elementiConto.push({product__title: this.title_coperti, total_quantity:this.numero_coperti, total_price:this.prezzo_coperto.toString()})
+        console.log(this.elementiConto);
+        
+        var total = 0
+        this.elementiConto.forEach(element => {
+          total = total  + parseFloat(element.total_price)
+          console.log(parseFloat(element.total_price))
+        });
+        this.conto_tot  = total
+  
+        //this.conto_tot = parseInt(this.conto['tot_price'],10).reduce((sum, product) => sum + product.price, 0);
+        console.log(data);
       });
-      this.conto_tot  = total
 
-      //this.conto_tot = parseInt(this.conto['tot_price'],10).reduce((sum, product) => sum + product.price, 0);
-      console.log(data);
     });
 
   }
@@ -299,8 +319,7 @@ export interface Commanda{
 }
 
 export interface Conto{
-  title: string;
+  product__title: string;
   total_quantity: number;
   total_price: string;
 }
-
