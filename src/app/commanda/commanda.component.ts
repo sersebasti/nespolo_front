@@ -274,9 +274,8 @@ export class CommandaComponent {
       var url_tavolo_status = this.url_main + "commanda_elementi_conto/?tavolo=" + this.dataTavolo.id
       this.django.getData(url_tavolo_status).subscribe((data: any) =>{
         this.elementiConto = data
-        console.log(this.elementiConto);
-        this.elementiConto.push({product__title: this.title_coperti, total_quantity:this.numero_coperti, total_price:this.prezzo_coperto.toString()})
-        console.log(this.elementiConto);
+        
+        this.elementiConto.push({product__title: this.title_coperti, total_quantity:this.numero_coperti, total_price: (this.prezzo_coperto * this.numero_coperti).toString()})
         
         var total = 0
         this.elementiConto.forEach(element => {
