@@ -36,14 +36,14 @@ export class TavoloComponent {
 
     // Get Tavoli
     console.log("ngOndTavoloInit");
-    this.django.getData(this.dataService.urls.tavoli).subscribe((data: any) =>{
+    this.django.getData(this.dataService.urls.tavoli_status).subscribe((data: any) =>{
       this.tavoli = data;
       console.log(data)
     });
     
     // Update Tavoli - freq (ms)
     this.intervalIdTavoli = setInterval(()=>{
-      this.django.getData(this.dataService.urls.tavoli).subscribe((data: any) =>{
+      this.django.getData(this.dataService.urls.tavoli_status).subscribe((data: any) =>{
         
         console.log(data)
         
@@ -106,17 +106,28 @@ export class TavoloComponent {
     //remove(element: any){this.commandaComponent.remove(element)}
     remove(element: any){
       
-      console.log("rimuovo tavolo:" + this.dataService.urls.tavoli + element.id + "/")
+      
+      
+      var result = window.confirm("Sicuro di voler eliminare il tavolo?");
 
-      this.django.deleteData(this.dataService.urls.tavoli + element.id + "/").subscribe((data: any) =>{
+        // Check the result
+      if (result) {
+        console.log("rimuovo tavolo:" + this.dataService.urls.tavoli + element.id + "/")
+
+        this.django.deleteData(this.dataService.urls.tavoli + element.id + "/").subscribe((data: any) =>{
          
         
-        // Update Tavoli
-        this.django.getData(this.dataService.urls.tavoli).subscribe((data: any) =>{
-          this.tavoli = data;
+          // Update Tavoli
+          this.django.getData(this.dataService.urls.tavoli).subscribe((data: any) =>{
+            this.tavoli = data;
+          });
+          
         });
         
-      });
+      } else {
+        // If user clicks Cancel or closes the dialog, cancel the delete action
+        console.log("Delete cancelled");
+      }
       
     }
 

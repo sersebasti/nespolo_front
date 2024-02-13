@@ -5,7 +5,7 @@
     <mat-chip-listbox>
 
       <mat-chip  *ngFor='let tavolo of tavoli' (click)="onTavoloClick(tavolo)">
-        <button mat-button>{{ tavolo.nome }}</button>
+        <button mat-button>{{ tavolo.nome }} <span *ngIf="tavolo.status_A !== 0">({{ tavolo.status_A }})</span> </button>
         <img matChipRemove src="../../assets/images/icons8-delete-30.png" alt="delete" (click)="remove(tavolo)"/>
       </mat-chip>
 
