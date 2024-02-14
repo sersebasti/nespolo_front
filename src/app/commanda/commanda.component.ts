@@ -159,6 +159,7 @@ export class CommandaComponent {
 
   add_product_pending(product_to_add: any, last_str: string){
     
+
     let quantity = 1
     // se per ultimo ho digitato un numero inserico quel numoro di prodotti
     let parsedValue = parseInt(last_str, 10);
@@ -171,9 +172,12 @@ export class CommandaComponent {
       "product": product_to_add.id,
       "quantity": quantity
     }
+
+    console.log(body);
     // Insert new product commanda
     this.django.doCreate(this.dataService.urls.commande, body).subscribe((response: any) => {
             console.log(JSON.stringify(response));
+            
             this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
               this.commanda = data;
               console.log(data);
@@ -182,7 +186,12 @@ export class CommandaComponent {
               // Set the value to null
               myInputField.value = "";
               this.cercaVisible = false
-
+               
+              // Nel cao uno sceglie altro subito apre finestra per descrizione
+              if (response.product_title == "altro Bar" || response.product_title == "altro Cucina" || response.product_title == "altro Pizzeria"){
+                this.modificaElementoCommanda(response);
+              }
+           
             });
     });
   }
