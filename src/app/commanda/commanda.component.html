@@ -121,7 +121,7 @@
     <hr>
 
     <div *ngIf="ordiniVisible">
-      <div  class="bottom-flex-container-1">
+      <div  *ngIf="!contoVisible" class="bottom-flex-container-1" >
         <input id="searchInputField" class="legend_add_prodotto centered-element" matInput placeholder="Cerca prodotto"  style="border-radius: 30px" (input)="cercaProdotto($event)" (keydown.enter)=" onSelectedProductEnter($event)"> 
       </div>
   
