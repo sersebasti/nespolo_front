@@ -43,7 +43,11 @@
       <fieldset  *ngIf="!ordiniVisible">
         <p>Titolo: {{ selected_commanda[0].product_title }}</p>
         <hr>
-          <p>Quantità: <input [(ngModel)]="selected_commanda[0].quantity" type="number" placeholder="Enter a number" (keydown.enter)="aggiornaElementoCommanda()"/></p>
+        <p>Nota:</p>
+        <textarea [(ngModel)]="selected_commanda[0].note" rows="3" maxlength="3000" placeholder="" class="custom-textarea" (keydown.enter)="aggiornaElementoCommanda()"></textarea>
+        <hr>
+
+        <p>Quantità: <input [(ngModel)]="selected_commanda[0].quantity" type="number" placeholder="Enter a number" (keydown.enter)="aggiornaElementoCommanda()"/></p>
           <div style="max-height: 200px; overflow: auto;">
             <mat-grid-list cols="3" rowHeight="50px">
               <mat-grid-tile><mat-radio-button value="1" [checked]="selected_commanda[0].quantity == 1" (change)="upDateRadio($event)">1</mat-radio-button></mat-grid-tile>
@@ -57,10 +61,6 @@
               <mat-grid-tile><mat-radio-button value="9" [checked]="selected_commanda[0].quantity == 9" (change)="upDateRadio($event)">9</mat-radio-button></mat-grid-tile>
             </mat-grid-list>
           </div>
-        <hr>
-
-        <p>Nota:</p>
-        <textarea [(ngModel)]="selected_commanda[0].note" rows="3" maxlength="2000" placeholder="" class="custom-textarea" (keydown.enter)="aggiornaElementoCommanda()"></textarea>
         <hr>
 
         <div class="centered-row">
