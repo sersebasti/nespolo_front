@@ -276,9 +276,6 @@ export class CommandaComponent {
     this.django.getData(this.url_tavolo).subscribe((data: any) =>{
 
       this.numero_coperti = data.coperti;
-      //var total = 0myArray.push(6);
-
-      //total = total + this.numero_coperti * this.prezzo_coperto;
       
       var url_tavolo_status = this.url_main + "commanda_elementi_conto/?tavolo=" + this.dataTavolo.id
       this.django.getData(url_tavolo_status).subscribe((data: any) =>{
@@ -286,12 +283,35 @@ export class CommandaComponent {
         
         this.elementiConto.push({product__title: this.title_coperti, total_quantity:this.numero_coperti, total_price: (this.prezzo_coperto * this.numero_coperti).toString()})
         
+        /*
         var total = 0
+        
         this.elementiConto.forEach(element => {
+
+          if(this.check_altro(element)){
+            this.conto_tot = 0;
+            break;
+          }
           total = total  + parseFloat(element.total_price)
           console.log(parseFloat(element.total_price))
+          console.log(this.check_altro(element))
         });
         this.conto_tot  = total
+        */
+        
+        let total = 0;
+        for (let i = 0; i < this.elementiConto.length; i++) {
+          const element = this.elementiConto[i];
+          if (this.check_altro(element)) {
+            this.conto_tot = 0;
+            total = 0;
+            break; // exit the loop if condition is met
+          }
+          total += parseFloat(element.total_price);
+          console.log(parseFloat(element.total_price));
+          console.log(this.check_altro(element));
+        }
+        this.conto_tot = total;
   
         //this.conto_tot = parseInt(this.conto['tot_price'],10).reduce((sum, product) => sum + product.price, 0);
         console.log(data);
@@ -299,6 +319,13 @@ export class CommandaComponent {
 
     });
 
+  }
+
+  check_altro(elem: any){
+    if (elem.product__title == "altro Bar" || elem.product__title == "altro Cucina" || elem.product__title == "altro Pizzeria"){
+      return 1;
+    }
+    else{return 0;}
   }
 
 
