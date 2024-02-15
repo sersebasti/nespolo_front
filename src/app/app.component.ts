@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { DataService } from './servizi/data.service';
 
 @Component({
   selector: 'app-root',
@@ -12,6 +13,7 @@ export class AppComponent {
   freq: number = 2000
   userType: string | undefined
   check: boolean = false
+  version: string | undefined
   
   loginVisible: boolean | undefined
   tavoliVisible: boolean | undefined
@@ -25,6 +27,12 @@ export class AppComponent {
   selectedOption: string | undefined;
 
   ruoli: string[] = ['Sala', 'Pizzeria', 'Cucina'];
+
+  constructor(private dataService: DataService){
+    this.version = dataService.version;
+  }
+
+
 
   ngOnInit(): void {
     
