@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { FormsModule } from '@angular/forms'; 
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'; 
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -14,6 +14,9 @@ import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatGridListModule } from '@angular/material/grid-list';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+
+
 
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { MAT_RADIO_DEFAULT_OPTIONS } from '@angular/material/radio';
@@ -24,6 +27,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { CommandaComponent } from './commanda/commanda.component';
 import { PizzeriaComponent } from './pizzeria/pizzeria.component';
 import { CucinaComponent } from './cucina/cucina.component';
+
 
 
 
@@ -42,6 +46,7 @@ import { CucinaComponent } from './cucina/cucina.component';
     AppRoutingModule,
     BrowserAnimationsModule,
     FormsModule,
+    ReactiveFormsModule,
     MatChipsModule,
     MatButtonModule,
     MatIconModule,
@@ -52,6 +57,7 @@ import { CucinaComponent } from './cucina/cucina.component';
     MatGridListModule,
     MatFormFieldModule,
     HttpClientModule,
+    MatAutocompleteModule
   ],
   providers: [    
     // Use the custom theme for all form fields

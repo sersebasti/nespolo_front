@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectorRef, Renderer2, ElementRef } from '@angular/core';
 import { DjangoService } from '../servizi/django.service';
 import { DataService } from '../servizi/data.service';
 import { GenericService } from '../servizi/generic.service';
@@ -52,8 +52,10 @@ export class CommandaComponent {
   prezzo_coperto: number = 1.5;
   numero_coperti: number = 1;
   title_coperti: string = "Coperti"
+  isViewInitialized: boolean | undefined;
 
-  constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService){
+  constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService, 
+    private cdr: ChangeDetectorRef, private renderer: Renderer2, private elementRef: ElementRef){
 
     // Acquisico i prodotti dal servizio dati 
     this.dataService.sharedData$.subscribe((data: any) => {
@@ -112,6 +114,7 @@ export class CommandaComponent {
   }
 
   cercaProdotto(event:any): any{
+    
     this.cercaVisible = true
     
     let inputElement = event.target as HTMLInputElement;
@@ -121,16 +124,77 @@ export class CommandaComponent {
     this.filtered_products = this.products
     let count = 0
     arr_input.forEach(searchStr => {
-      if (searchStr.length >= 3){
+      if (searchStr.length >= 2){
         count = count + 1
         this.filtered_products = this.filtered_products.filter((product: Product) => product.title.toLowerCase().includes(searchStr.toLowerCase()))
-        console.log(this.filtered_products) 
+        console.log(this.filtered_products)
       }
-    });
+    })
     
+    // Detect changes after the part of the page has been recreated
+    this.cdr.detectChanges();
+
+    // Perform your action after the part of the page has been recreated
+    this.yourActionAfterRecreation();
+
     if(count == 0){this.filtered_products = []}
 
     return [this.filtered_products, arr_input[arr_input.length-1]]
+  }
+
+  yourActionAfterRecreation(): void {
+    // Your action after the part of the page has been recreated
+    const prodotto_filtrati = document.getElementById('prodotto_filtrati');
+    const cerca_prodotto = this.elementRef.nativeElement.querySelector('#cerca_prodotto');
+    
+
+    if (prodotto_filtrati) {
+      const height = prodotto_filtrati.offsetHeight;
+      console.log('prodotto_filtrati:', height);
+    } else {
+      console.error('prodotto_filtrati not found');
+    }
+
+    if (cerca_prodotto && prodotto_filtrati) {
+      // Get the bounding rectangle of the element
+      const rect = cerca_prodotto.getBoundingClientRect();
+      const height = prodotto_filtrati.offsetHeight;
+      
+      // Get the top position of the element relative to the document
+      const topPosition = rect.top;
+
+      console.log('Top position:', topPosition);
+
+      let new_pos = topPosition - height;
+      let new_pos_str = new_pos.toString() + 'px';
+      
+      this.renderer.setStyle(prodotto_filtrati, 'position', 'fixed');
+      this.renderer.setStyle(prodotto_filtrati, 'top', new_pos_str);
+
+    }
+
+  }
+
+  ngAfterViewInit(): void {
+    // This code will run after the component's view has been initialized
+    this.isViewInitialized = true;
+    this.onLoad();
+  }
+
+  onLoad(): void {
+    if (this.isViewInitialized) {
+      
+      const element = document.getElementById('prodotto_filtrati');
+
+      if (element) {
+        const height = element.offsetHeight;
+        console.log('Element height:', height);
+      } else {
+        console.error('Element not found');
+      }
+
+
+    }
   }
 
   checkInput(products: any, str: string) {
