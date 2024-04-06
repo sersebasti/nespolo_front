@@ -26,65 +26,45 @@
 
 /* botone cerca prodotto */
 .bottom-flex-container-1 {
-    background-color: white;
+    order: 1 !important;
     padding: 5px;
     font-size: 30px;
-    
-    position: fixed;
-    left: 50%;
-    bottom: 60px !important;
-    transform: translate(-50%, -50%);
-    margin: 0 auto;
     border-radius: 20px;
-
-  
 }
+
 
 /* Tavoli conto*/
 .bottom-flex-container-2 {
+    order: 2;
     background-color: white;
     padding: 5px;
     font-size: 20px;
-    display: flex;
-    
-    position: fixed;
-    left: 50%;
-    bottom: 0px;
-    transform: translate(-50%, -50%);
-    /*margin: 0 auto;*/
-    border-radius: 20px;
 }
 
-.my_buttons{
-    background-color: #41c0ba;
-    margin-inline: 50px;
-    width: 150px;
-}
 
 /* elementi ricerca */ 
 .bottom-flex-container-3 {
-    background-color: #0f2c2b;
-    padding: 10px;
+    order: 3;
+    background-color: white;
+    padding: 5px;
     font-size: 30px;
-    
-    /*
+   
+}
+
+.bottom-flex-container-4{
     position: fixed;
-    
-    left: 50%;
-    bottom: 200px;
-    transform: translate(-50%, -50%);
-    margin: 0 auto;
-    border-radius: 20px;
-    */
-
-    width: 100%;
-    /*
-    flex-direction: row-reverse !important;
-
-    
+    bottom: 20px !important;
     display: flex;
-    align-items: flex-start;
-   */
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+
+.my_buttons{
+    background-color: #41c0ba;
+    margin-inline: 25px;
+    width: 100px;
 }
 
 

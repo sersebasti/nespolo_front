@@ -154,7 +154,7 @@ export class CommandaComponent {
     } else {
       console.error('prodotto_filtrati not found');
     }
-
+    /*
     if (cerca_prodotto && prodotto_filtrati) {
       // Get the bounding rectangle of the element
       const rect = cerca_prodotto.getBoundingClientRect();
@@ -172,6 +172,7 @@ export class CommandaComponent {
       this.renderer.setStyle(prodotto_filtrati, 'top', new_pos_str);
 
     }
+    /**/
 
   }
 

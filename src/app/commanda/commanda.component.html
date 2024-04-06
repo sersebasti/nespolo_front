@@ -120,23 +120,24 @@
 
     <hr>
 
-    <div *ngIf="ordiniVisible">
+    <div *ngIf="ordiniVisible" class="bottom-flex-container-4">
       
-      <div class="bottom-flex-container-3" id="prodotto_filtrati">
+      <div class="bottom-flex-container-1" id="prodotto_filtrati">
         <mat-chip-listbox *ngIf="cercaVisible" aria-label="product selection">
           <mat-chip  *ngFor='let products of filtered_products' (click)="onSelectedProductChip(products)">
             <button mat-button>{{ products.title }}</button>
           </mat-chip>
         </mat-chip-listbox>
+        <!--p> test position</p-->
       </div>
 
 
 
-      <div  *ngIf="!contoVisible" class="bottom-flex-container-1" id="cerca_prodotto">
+      <div  *ngIf="!contoVisible" class="bottom-flex-container-2" id="cerca_prodotto">
         <input id="searchInputField" class="legend_add_prodotto centered-element" matInput placeholder="Cerca prodotto"  style="border-radius: 30px" (input)="cercaProdotto($event)" (keydown.enter)=" onSelectedProductEnter($event)"> 
       </div>
   
-      <div  class="bottom-flex-container-2">
+      <div  class="bottom-flex-container-3">
           <a mat-button class="my_buttons"  (click)="toTavoli($event)"><< Tavoli</a>
           <a mat-button class="my_buttons"  (click)="conto('toggle')"><label *ngIf="!contoVisible">Conto</label><label *ngIf="contoVisible">X</label></a>      
       </div>
