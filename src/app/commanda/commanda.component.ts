@@ -91,11 +91,12 @@ export class CommandaComponent {
     this.intervalIdOrdinazioni = setInterval(()=>{
 
       this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
-
+        
+        //console.log(data);
         if(!this.genericService.arraysAreEqual(data, this.commanda)){
           console.log(this.commanda);
           this.commanda = data;
-          console.log("aggiornato commanda")
+          console.log("aggiornato commanda");
         }
 
       });
@@ -154,25 +155,6 @@ export class CommandaComponent {
     } else {
       console.error('prodotto_filtrati not found');
     }
-    /*
-    if (cerca_prodotto && prodotto_filtrati) {
-      // Get the bounding rectangle of the element
-      const rect = cerca_prodotto.getBoundingClientRect();
-      const height = prodotto_filtrati.offsetHeight;
-      
-      // Get the top position of the element relative to the document
-      const topPosition = rect.top;
-
-      console.log('Top position:', topPosition);
-
-      let new_pos = topPosition - height;
-      let new_pos_str = new_pos.toString() + 'px';
-      
-      this.renderer.setStyle(prodotto_filtrati, 'position', 'fixed');
-      this.renderer.setStyle(prodotto_filtrati, 'top', new_pos_str);
-
-    }
-    /**/
 
   }
 

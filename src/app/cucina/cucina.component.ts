@@ -23,12 +23,18 @@ export class CucinaComponent {
   url_collection_status: string;
 
   intervalIdOrdinazioni: undefined | ReturnType<typeof setTimeout>;
+  bellSound: HTMLAudioElement;
+
+  
 
   constructor(private django: DjangoService, private dataService: DataService, 
     private genericService: GenericService){
     
     this.url_main  = dataService.url_main
     this.url_collection_status = "";
+
+    this.bellSound = new Audio();
+    this.bellSound.src = 'assets/bell-sound-1.wav';
   }
 
   ngOnInit(): void {
@@ -60,7 +66,9 @@ export class CucinaComponent {
         if(!this.genericService.arraysAreEqual(data, this.commanda)){
           console.log(this.commanda);
           this.commanda = data;
-          console.log("aggiornato commanda")
+          //console.log("aggiornato commanda");
+          this.bellSound.play();
+           
         }
 
       });
@@ -96,6 +104,7 @@ export class CucinaComponent {
       this.django.getData(this.url_collection_status).subscribe((data: any) =>{
         this.commanda = data;
         console.log(data);
+      
       });
     });
 

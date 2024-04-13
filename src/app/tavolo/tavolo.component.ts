@@ -23,11 +23,14 @@ export class TavoloComponent {
   
   inputData: any;
   coperti: any;
+  bellSound: any;
   
   // da fare: se ci sono molti tavoli il bottone su deve spostare più in basso
   //molti_tav = false
 
   constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService){
+    this.bellSound = new Audio();
+    this.bellSound.src = 'assets/bell-sound-1.wav';
   }
   
   ngOnInit(): void {

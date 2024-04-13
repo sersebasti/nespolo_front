@@ -23,12 +23,17 @@ export class PizzeriaComponent {
 
   url_main: string | undefined
   url_commande: string | undefined
+  bellSound: HTMLAudioElement;
 
   constructor(private django: DjangoService, private dataService: DataService, 
     private genericService: GenericService){
     
     this.url_main  = dataService.url_main
     this.url_collection_status = "";
+
+    this.bellSound = new Audio();
+    this.bellSound.src = 'assets/bell-sound-1.wav';
+
   }
 
 
@@ -58,7 +63,10 @@ export class PizzeriaComponent {
         // ordino per id crescente
         data.sort((a: { id: number; }, b: { id: number; }) => a.id - b.id);
 
-        if(!this.genericService.arraysAreEqual(data, this.commanda)){this.commanda = data;}
+        if(!this.genericService.arraysAreEqual(data, this.commanda)){
+          this.commanda = data;
+          this.bellSound.play();
+        }
 
       });
     }, this.freq);
