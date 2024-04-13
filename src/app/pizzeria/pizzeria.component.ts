@@ -45,6 +45,8 @@ export class PizzeriaComponent {
     this.url_collection_status = this.url_main + "commanda_collection_status/?product_collection_id=1&production_status=B";
   
     this.django.getData(this.url_collection_status).subscribe((data: any) =>{
+      // ordino per id crescente
+      data.sort((a: { id: number; }, b: { id: number; }) => a.id - b.id);
       this.commanda = data;
     });
 
@@ -52,6 +54,9 @@ export class PizzeriaComponent {
 
     
       this.django.getData(this.url_collection_status).subscribe((data: any) =>{
+
+        // ordino per id crescente
+        data.sort((a: { id: number; }, b: { id: number; }) => a.id - b.id);
 
         if(!this.genericService.arraysAreEqual(data, this.commanda)){this.commanda = data;}
 

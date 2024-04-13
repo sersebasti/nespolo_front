@@ -44,12 +44,18 @@ export class CucinaComponent {
     this.url_collection_status = this.url_main + "commanda_collection_status/?product_collection_id=2&production_status=B";
   
     this.django.getData(this.url_collection_status).subscribe((data: any) =>{
+      
+      // ordino per id crescente
+      data.sort((a: { id: number; }, b: { id: number; }) => a.id - b.id);
       this.commanda = data;
     });
 
     this.intervalIdOrdinazioni = setInterval(()=>{
 
       this.django.getData(this.url_collection_status).subscribe((data: any) =>{
+
+        // ordino per id crescente
+        data.sort((a: { id: number; }, b: { id: number; }) => a.id - b.id);
 
         if(!this.genericService.arraysAreEqual(data, this.commanda)){
           console.log(this.commanda);
