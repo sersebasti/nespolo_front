@@ -10,7 +10,7 @@ export class DataService {
   //url_main: string = 'http://localhost:8000/commanda/'
   urls: { main: string; products: string; commande: string; tavoli: string; tavoli_status: string; ordinazione: string; };
 
-  version: string = '1.1.10';
+  version: string = '1.1.11';
 
   constructor() {  
     this.urls = {
