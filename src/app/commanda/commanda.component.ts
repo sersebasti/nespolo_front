@@ -24,6 +24,7 @@ export class CommandaComponent {
   ordiniVisible: boolean | undefined
   contoVisible: boolean | undefined
   conto_tot: number | undefined
+  conto_contine_altro: number = 0;
   coperti: number | undefined 
   
   products: Product[] = [];
@@ -316,33 +317,18 @@ export class CommandaComponent {
         
         this.elementiConto.push({product__title: this.title_coperti, total_quantity:this.numero_coperti, total_price: (this.prezzo_coperto * this.numero_coperti).toString()})
         
-        /*
-        var total = 0
-        
-        this.elementiConto.forEach(element => {
-
-          if(this.check_altro(element)){
-            this.conto_tot = 0;
-            break;
-          }
-          total = total  + parseFloat(element.total_price)
-          console.log(parseFloat(element.total_price))
-          console.log(this.check_altro(element))
-        });
-        this.conto_tot  = total
-        */
-        
         let total = 0;
         for (let i = 0; i < this.elementiConto.length; i++) {
           const element = this.elementiConto[i];
-          if (this.check_altro(element)) {
-            this.conto_tot = 0;
-            total = 0;
-            break; // exit the loop if condition is met
+          if (!this.check_altro(element)) {
+            total += parseFloat(element.total_price);
+            console.log(parseFloat(element.total_price));
+            console.log(this.check_altro(element));
           }
-          total += parseFloat(element.total_price);
-          console.log(parseFloat(element.total_price));
-          console.log(this.check_altro(element));
+          else{
+            this.conto_contine_altro = 1;
+          }
+       
         }
         this.conto_tot = total;
   

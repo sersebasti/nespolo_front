@@ -75,8 +75,8 @@
     <hr>
     <div *ngIf="contoVisible">
         <p class="legend_commanda">Conto: 
-          <span *ngIf="conto_tot!=0">{{conto_tot}} &#8364;</span>
-          <span *ngIf="conto_tot==0">X</span>
+          <span *ngIf="!conto_contine_altro">{{conto_tot}} &#8364;</span>
+          <span *ngIf="conto_contine_altro">{{conto_tot}} &#8364; + X</span>
         </p>
       
         <div class="table-container">
