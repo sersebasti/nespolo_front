@@ -135,28 +135,14 @@ export class CommandaComponent {
     // Detect changes after the part of the page has been recreated
     this.cdr.detectChanges();
 
-    // Perform your action after the part of the page has been recreated
-    this.yourActionAfterRecreation();
+  
 
     if(count == 0){this.filtered_products = []}
 
     return [this.filtered_products, arr_input[arr_input.length-1]]
   }
 
-  yourActionAfterRecreation(): void {
-    // Your action after the part of the page has been recreated
-    const prodotto_filtrati = document.getElementById('prodotto_filtrati');
-    const cerca_prodotto = this.elementRef.nativeElement.querySelector('#cerca_prodotto');
-    
 
-    if (prodotto_filtrati) {
-      const height = prodotto_filtrati.offsetHeight;
-      console.log('prodotto_filtrati:', height);
-    } else {
-      console.error('prodotto_filtrati not found');
-    }
-
-  }
 
   ngAfterViewInit(): void {
     // This code will run after the component's view has been initialized
