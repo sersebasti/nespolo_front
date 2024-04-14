@@ -60,15 +60,19 @@ export class CucinaComponent {
 
       this.django.getData(this.url_collection_status).subscribe((data: any) =>{
 
+
+        if(data.length > this.commanda.length ){
+          this.bellSound.play();
+        }
+
         // ordino per id crescente
         data.sort((a: { id: number; }, b: { id: number; }) => a.id - b.id);
-
+        
         if(!this.genericService.arraysAreEqual(data, this.commanda)){
           console.log(this.commanda);
           this.commanda = data;
-          //console.log("aggiornato commanda");
-          this.bellSound.play();
-           
+          //console.log("aggiornato commanda")
+          
         }
 
       });

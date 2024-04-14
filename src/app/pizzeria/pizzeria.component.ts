@@ -63,9 +63,12 @@ export class PizzeriaComponent {
         // ordino per id crescente
         data.sort((a: { id: number; }, b: { id: number; }) => a.id - b.id);
 
+        if(data.length > this.commanda.length ){
+          this.bellSound.play();
+        }
+
         if(!this.genericService.arraysAreEqual(data, this.commanda)){
           this.commanda = data;
-          this.bellSound.play();
         }
 
       });
@@ -78,6 +81,10 @@ export class PizzeriaComponent {
 
   //remove(element: any){this.commandaComponent.remove(element)}
   remove(element: any){
+
+    //var result = window.confirm("Sicuro di voler eliminare il tavolo?");
+
+
     this.django.deleteData(this.dataService.urls.commande + element.id + "/").subscribe((data: any) =>{
 
       this.django.getData(this.url_collection_status).subscribe((data: any) =>{
