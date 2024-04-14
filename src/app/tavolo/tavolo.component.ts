@@ -93,7 +93,7 @@ export class TavoloComponent {
       // Check if the input is a valid integer
       if (isNaN(intCoperti)) {
       // Display the integer value
-      alert("Hai inserito: " + this.coperti);
+      alert("Inserisci numero coperti");
       } 
       else{
         
