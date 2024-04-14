@@ -82,17 +82,19 @@ export class PizzeriaComponent {
   //remove(element: any){this.commandaComponent.remove(element)}
   remove(element: any){
 
-    //var result = window.confirm("Sicuro di voler eliminare il tavolo?");
+    var result = window.confirm("Confermi di voler eliminare?");
 
+    if(result){      
+      this.django.deleteData(this.dataService.urls.commande + element.id + "/").subscribe((data: any) =>{
 
-    this.django.deleteData(this.dataService.urls.commande + element.id + "/").subscribe((data: any) =>{
-
-      this.django.getData(this.url_collection_status).subscribe((data: any) =>{
-        this.commanda = data;
-        console.log(data);
+        this.django.getData(this.url_collection_status).subscribe((data: any) =>{
+          this.commanda = data;
+          console.log(data);
+        });
+  
       });
+    }
 
-    });
   }
 
   

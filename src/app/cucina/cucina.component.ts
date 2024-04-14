@@ -83,14 +83,20 @@ export class CucinaComponent {
 
   //remove(element: any){this.commandaComponent.remove(element)}
   remove(element: any){
-    this.django.deleteData(this.dataService.urls.commande + element.id + "/").subscribe((data: any) =>{
 
-      this.django.getData(this.url_collection_status).subscribe((data: any) =>{
-        this.commanda = data;
-        console.log(data);
+    var result = window.confirm("Confermi di voler eliminare?");
+
+    if(result){
+      this.django.deleteData(this.dataService.urls.commande + element.id + "/").subscribe((data: any) =>{
+
+        this.django.getData(this.url_collection_status).subscribe((data: any) =>{
+          this.commanda = data;
+          console.log(data);
+        });
+  
       });
+    }
 
-    });
   }
 
   
