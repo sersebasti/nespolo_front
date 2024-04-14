@@ -51,6 +51,10 @@ export class TavoloComponent {
         
         console.log(data)
         
+        if(this.genericService.checkSuondCondition(this.tavoli,data)){
+          this.bellSound.play();
+        }
+
         if(!this.genericService.arraysAreEqual(data,this.tavoli)){
           this.tavoli = data;
           console.log(this.tavoli);
