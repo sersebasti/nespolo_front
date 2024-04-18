@@ -54,16 +54,25 @@ export class CommandaComponent {
   numero_coperti: number = 1;
   title_coperti: string = "Coperti"
   isViewInitialized: boolean | undefined;
+  
+  
+
+  tavoli: any;
+  bellSound: HTMLAudioElement;
+
 
   constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService, 
     private cdr: ChangeDetectorRef, private renderer: Renderer2, private elementRef: ElementRef){
+    
+    this.bellSound = new Audio();
+    this.bellSound.src = 'assets/bell-sound-1.wav';
 
     // Acquisico i prodotti dal servizio dati 
     this.dataService.sharedData$.subscribe((data: any) => {
       this.products = JSON.parse(data)
       console.log(this.products) 
     });
-    
+
 
   }
   
@@ -81,12 +90,17 @@ export class CommandaComponent {
     this.url_tavolo_no_status = this.url_main + "commanda_tavolo_nostatus/?tavolo=" + this.dataTavolo.id + "&production_status=D";
 
     
-    
     // Acquisico Ordinazioni dal servizio django 
     this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
       console.log(data)
       this.commanda = data;
       
+    });
+
+    // Tavoli solo per il suono 
+    this.django.getData(this.dataService.urls.tavoli_status).subscribe((data_tavoli: any) =>{
+      this.tavoli = data_tavoli;
+      console.log(data_tavoli)
     });
 
     this.intervalIdOrdinazioni = setInterval(()=>{
@@ -99,8 +113,30 @@ export class CommandaComponent {
           this.commanda = data;
           console.log("aggiornato commanda");
         }
-
+        
       });
+
+      // solo per il suono 
+      this.django.getData(this.dataService.urls.tavoli_status).subscribe((data_tavoli: any) =>{
+        
+        console.log(data_tavoli)
+        
+        if(this.checkSuondCondition(this.tavoli,data_tavoli)){
+          this.bellSound.play();
+          console.log("suona");
+        }
+
+        if(!this.genericService.arraysAreEqual(data_tavoli,this.tavoli)){
+          this.tavoli = data_tavoli;
+          console.log(this.tavoli);
+        }
+        
+        
+      });
+
+
+
+
     }, this.freq);
   
   }
@@ -345,6 +381,20 @@ export class CommandaComponent {
       return 1;
     }
     else{return 0;}
+  }
+
+
+
+  checkSuondCondition(arr1: any[], arr2: any[]): boolean {
+    
+    for (let i = 0; i < arr1.length; i++) {
+      const matchingElement = arr2.find(item => item.id === arr1[i].id);
+      if (matchingElement && matchingElement.status_A > arr1[i].status_A) {
+          return true;
+      }
+    }
+
+    return false;
   }
 
 

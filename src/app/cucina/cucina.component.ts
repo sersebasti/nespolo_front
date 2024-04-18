@@ -60,18 +60,17 @@ export class CucinaComponent {
 
       this.django.getData(this.url_collection_status).subscribe((data: any) =>{
 
-
-        if(data.length > this.commanda.length ){
-          this.bellSound.play();
-        }
-
         // ordino per id crescente
         data.sort((a: { id: number; }, b: { id: number; }) => a.id - b.id);
         
         if(!this.genericService.arraysAreEqual(data, this.commanda)){
-          console.log(this.commanda);
+          
+          if(this.checkSuondCondition(this.commanda,data)){
+            this.bellSound.play();
+          }
+
           this.commanda = data;
-          //console.log("aggiornato commanda")
+        
           
         }
 
@@ -129,7 +128,31 @@ export class CucinaComponent {
     console.log("toLogin")
     this.ToLogin.emit(true)
   }
+
+  checkSuondCondition(arr1: any[], arr2: any[]): boolean {
+    
+    var id1_max = 0;
+    arr1.forEach(element1 => {
+      if(element1.id > id1_max){id1_max = element1.id}
+    });
+    
+    var id2_max = 0;
+    arr2.forEach(element2 => {
+      if(element2.id > id2_max){id2_max = element2.id}
+    });
+    
+    if(id2_max > id1_max){
+      return true;
+    }
+    else{
+      return false;
+    }
+    
+  }
 }
+
+
+
 
 
 
