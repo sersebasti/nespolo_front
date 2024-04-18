@@ -51,7 +51,7 @@ export class TavoloComponent {
         
         console.log(data)
         
-        if(this.genericService.checkSuondCondition(this.tavoli,data)){
+        if(this.checkSuondCondition(this.tavoli,data)){
           this.bellSound.play();
         }
 
@@ -156,6 +156,21 @@ export class TavoloComponent {
       this.ToLogin.emit(true)
       clearInterval(this.intervalIdTavoli);
   }
+
+  checkSuondCondition(arr1: any[], arr2: any[]): boolean {
+    
+    for (let i = 0; i < arr1.length; i++) {
+      const matchingElement = arr2.find(item => item.id === arr1[i].id);
+      if (matchingElement && matchingElement.status_A > arr1[i].status_A) {
+          return true;
+      }
+    }
+
+    return false;
+  }
+ 
+
+
 
  
 
