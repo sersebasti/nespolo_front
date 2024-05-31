@@ -203,3 +203,24 @@ mat-chip button {
     font-weight: bold;
     font-size: 15px;
 }
+
+/* Add custom CSS to style the radio button container */
+.radio-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+mat-radio-button {
+    flex-basis: calc(100% / 3); /* Set each radio button to occupy one-third of the container width */
+    box-sizing: border-box; /* Include padding and border in the width */
+    padding: 5px; /* Add padding for spacing between radio buttons */
+}
+
+/* Add custom CSS to style the note field */
+.custom-textarea {
+    width: 90vw; /* Set the width to 90% of the viewport width */
+    max-width: 100%; /* Ensure the width does not exceed the viewport width */
+    box-sizing: border-box; /* Include padding and border in the width */
+    padding: 5px; /* Add padding for spacing */
+    margin: 10px 0; /* Add margin for spacing */
+}

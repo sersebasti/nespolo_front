@@ -28,7 +28,7 @@ import { CommandaComponent } from './commanda/commanda.component';
 import { PizzeriaComponent } from './pizzeria/pizzeria.component';
 import { CucinaComponent } from './cucina/cucina.component';
 
-
+import { DataService } from './servizi/data.service';
 
 
 
@@ -59,7 +59,8 @@ import { CucinaComponent } from './cucina/cucina.component';
     HttpClientModule,
     MatAutocompleteModule
   ],
-  providers: [    
+  providers: [
+    DataService,    
     // Use the custom theme for all form fields
     {
       provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,

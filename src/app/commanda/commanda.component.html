@@ -1,5 +1,5 @@
 <div class="commanda_body">
-    <p class="legend_commanda">Commanda | {{ dataTavolo.nome }}</p> 
+    <p class="legend_commanda">Commanda | {{ nomeTavolo }}</p> 
     
    
     <div class="up-container">
@@ -27,47 +27,45 @@
       <fieldset  *ngIf="ordiniVisible">
         <mat-chip-set aria-label="Orinazioni">
         <div *ngFor='let element of commanda'>
-          <mat-chip>        
-            <div [className]="element.production_status" (click)="modificaElementoCommanda(element)">{{element.product_title }} ({{ element.quantity }}) {{element.note}}</div>
-            <img *ngIf="element.production_status == 'A'" matChipRemove src="../../assets/images/icons8-delete-30.png" alt="delete" (click)="remove(element)"/>
-            <img *ngIf="element.production_status == 'A' && element.product_collection_id != 3" matChipRemove src="../../assets/images/send_icon.png" alt="toProduzione" (click)="change_production_status(element,'B')"/>
-            <img *ngIf="element.product_collection_id == 3 || element.production_status == 'C'" matChipRemove src="../../assets/images/check.png" alt="complete" (click)="change_production_status(element,'D')"/>
-            <img *ngIf="element.production_status == 'B'" matChipRemove src="../../assets/images/gear.png" alt="InProduzione"/>
+          <mat-chip *ngIf="element.commanda__production_status !== 'D'">        
+            <div (click)="modificaElementoCommanda(element)">{{element.commanda__product__title }} ({{ element.commanda__quantity }}) {{element.commanda__note}}</div>
+            
+            <img *ngIf="element.commanda__production_status == 'A'" matChipRemove src="../../assets/images/icons8-delete-30.png" alt="delete" (click)="remove(element)"/>
+            <!-- Se è un prodotto che posso mandare in produzione ci aggiungo una freccia -->
+            <img *ngIf="element.commanda__production_status == 'A' && element.product_collection_id != 3" matChipRemove src="../../assets/images/send_icon.png" alt="freccia" (click)="change_production_status(element,'B')"/>
+            
+            <img *ngIf="element.product_collection_id == 3 || element.commanda__production_status == 'C'" matChipRemove src="../../assets/images/check.png" alt="complete" (click)="change_production_status(element,'D')"/>
+
+            <img *ngIf="element.commanda__production_status == 'B'" matChipRemove src="../../assets/images/gear.png" alt="ingranaggio"/>
+
         </mat-chip>
         </div>  
         </mat-chip-set>
 
 
       </fieldset>
-      
-      <fieldset  *ngIf="!ordiniVisible">
-        <p>Titolo: {{ selected_commanda[0].product_title }}</p>
+
+      <!-- Your HTML code with radio buttons in three columns -->
+      <fieldset *ngIf="!ordiniVisible">
+        <hr>
+        <!-- Other HTML code -->
+        <p>Quantità:</p>
+        <p><input type="number" placeholder="Enter a number" [(ngModel)]="quantity"/></p>
+        <div class="radio-container">
+            <mat-radio-group>
+                <mat-radio-button *ngFor="let value of [1, 2, 3, 4, 5, 6, 7, 8, 9]" [value]="value" (change)="onRadioSelected(value)">{{value}}</mat-radio-button>
+            </mat-radio-group>
+        </div>
         <hr>
         <p>Nota:</p>
-        <textarea [(ngModel)]="selected_commanda[0].note" rows="3" maxlength="3000" placeholder="" class="custom-textarea" (keydown.enter)="aggiornaElementoCommanda()"></textarea>
-        <hr>
-
-        <p>Quantità: <input [(ngModel)]="selected_commanda[0].quantity" type="number" placeholder="Enter a number" (keydown.enter)="aggiornaElementoCommanda()"/></p>
-          <div style="max-height: 200px; overflow: auto;">
-            <mat-grid-list cols="3" rowHeight="50px">
-              <mat-grid-tile><mat-radio-button value="1" [checked]="selected_commanda[0].quantity == 1" (change)="upDateRadio($event)">1</mat-radio-button></mat-grid-tile>
-              <mat-grid-tile><mat-radio-button value="2" [checked]="selected_commanda[0].quantity == 2" (change)="upDateRadio($event)">2</mat-radio-button></mat-grid-tile>
-              <mat-grid-tile><mat-radio-button value="3" [checked]="selected_commanda[0].quantity == 3" (change)="upDateRadio($event)">3</mat-radio-button></mat-grid-tile>
-              <mat-grid-tile><mat-radio-button value="4" [checked]="selected_commanda[0].quantity == 4" (change)="upDateRadio($event)">4</mat-radio-button></mat-grid-tile>
-              <mat-grid-tile><mat-radio-button value="5" [checked]="selected_commanda[0].quantity == 5" (change)="upDateRadio($event)">5</mat-radio-button></mat-grid-tile>
-              <mat-grid-tile><mat-radio-button value="6" [checked]="selected_commanda[0].quantity == 6" (change)="upDateRadio($event)">6</mat-radio-button></mat-grid-tile>
-              <mat-grid-tile><mat-radio-button value="7" [checked]="selected_commanda[0].quantity == 7" (change)="upDateRadio($event)">7</mat-radio-button></mat-grid-tile>
-              <mat-grid-tile><mat-radio-button value="8" [checked]="selected_commanda[0].quantity == 8" (change)="upDateRadio($event)">8</mat-radio-button></mat-grid-tile>
-              <mat-grid-tile><mat-radio-button value="9" [checked]="selected_commanda[0].quantity == 9" (change)="upDateRadio($event)">9</mat-radio-button></mat-grid-tile>
-            </mat-grid-list>
-          </div>
-        <hr>
-
+        <textarea rows="3" maxlength="3000" placeholder="" class="custom-textarea" [(ngModel)]="textareaContent" (keydown.enter)="onEnterPressed($event)"></textarea>
+        <!-- Other HTML code -->
         <div class="centered-row">
-          <button mat-button class="salva" (click)="aggiornaElementoCommanda()">Salva</button>
+            <button mat-button class="salva" (click)="aggiornaElementoCommanda()">Salva</button>
         </div>
-      <!--button class="close-button" (click)="closeModificaElementoCommanda()">x</button-->  
+        <button class="close-button" (click)="closeModificaElementoCommanda()">x</button>
       </fieldset>
+
 
   
     </div>
@@ -75,8 +73,7 @@
     <hr>
     <div *ngIf="contoVisible">
         <p class="legend_commanda">Conto: 
-          <span *ngIf="!conto_contine_altro">{{conto_tot}} &#8364;</span>
-          <span *ngIf="conto_contine_altro">{{conto_tot}} &#8364; + X</span>
+          {{overallTotalPriceString}}
         </p>
       
         <div class="table-container">
@@ -88,23 +85,21 @@
             <!-- Position Column -->
             <ng-container matColumnDef="product__title">
               <th mat-header-cell *matHeaderCellDef>Prodotto</th>
-              <td mat-cell *matCellDef="let element"> {{element.product__title}}
-                <span *ngIf="element.note!=null">({{element.note}})</span>
+              <td mat-cell *matCellDef="let element"> {{element.productTitle}}
               </td>
             </ng-container>
           
             <!-- Name Column -->
             <ng-container matColumnDef="total_quantity">
               <th mat-header-cell *matHeaderCellDef>N</th>
-              <td mat-cell *matCellDef="let element"> {{element.total_quantity}}</td>
+              <td mat-cell *matCellDef="let element"> {{element.totalQuantity}}</td>
             </ng-container>
           
             <!-- Weight Column -->
             <ng-container matColumnDef="total_price">
               <th mat-header-cell *matHeaderCellDef>&#8364;</th>
               <td mat-cell *matCellDef="let element">
-                <span *ngIf="!check_altro(element)">{{element.total_price}}</span>
-                <span *ngIf="check_altro(element)">X</span>
+                <span>{{ element.totalPrice }}</span>
               </td>
             </ng-container>
           
@@ -138,7 +133,7 @@
       </div>
   
       <div  class="bottom-flex-container-3">
-          <a mat-button class="my_buttons"  (click)="toTavoli($event)"><< Tavoli</a>
+          <a mat-button class="my_buttons"  (click)="setPage('tavoli')"><< Tavoli</a>
           <a mat-button class="my_buttons"  (click)="conto('toggle')"><label *ngIf="!contoVisible">Conto</label><label *ngIf="contoVisible">X</label></a>      
       </div>
   

@@ -7,91 +7,28 @@ import { DataService } from './servizi/data.service';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  title(title: any) {
-    throw new Error('Method not implemented.');
-  }
-  freq: number = 2000
-  userType: string | undefined
-  check: boolean = false
+  
   version: string | undefined
   
-  loginVisible: boolean | undefined
-  tavoliVisible: boolean | undefined
-  commandaVisible: boolean | undefined
-  pizzeriaVisible: boolean | undefined
-  cucinaVisible: boolean | undefined;
-  dataTavolo: object | undefined
-  dataUsername: string | undefined
- 
-
-  selectedOption: string | undefined;
-
-  ruoli: string[] = ['Sala', 'Pizzeria', 'Cucina'];
-
-  constructor(private dataService: DataService){
-    this.version = dataService.version;
-  }
-
-
+  showMain: boolean = false
+  showTavoli: boolean  = false
+  showCommanda: boolean = false
+  showPizzeria: boolean = false
+  showCucina: boolean = false;
+  
+  constructor(private dataService: DataService){this.version = dataService.version;}
 
   ngOnInit(): void {
-    
-    this.loginVisible = true
-    this.commandaVisible = false 
-    this.pizzeriaVisible = false
-    this.tavoliVisible = false
-    this.cucinaVisible = false
-    //get user type
-    //this.userType = "Cameriere"
-    //this.userType = "Pizzaiolo"
-    //this.userType = "Cuoco"
-    
-   
-  }
-  // ottenuto da sendTavoloData di tavolo.component.ts, *ngFor='let tavolo of tavoli' (click)="onTavoloClick(tavolo) nel .html
-  getTavoloData(data: string){
-    console.log(JSON.parse(data))
-    this.dataTavolo = JSON.parse(data)
-    this.tavoliVisible = false
-    this.commandaVisible = true
+    this.dataService.mainVisible$.subscribe(data =>{this.showMain = data;})
+    this.dataService.tavoliVisible$.subscribe(data =>{this.showTavoli = data;})
+    this.dataService.commandaVisible$.subscribe(data =>{this.showCommanda = data;})
+    this.dataService.pizzeriaVisible$.subscribe(data =>{this.showPizzeria = data;})
+    this.dataService.cucinaVisible$.subscribe(data =>{this.showCucina = data;})
   }
 
-  goToTavoli(data: any){
-    console.log(data)
-    this.tavoliVisible = data
-    this.commandaVisible = !data
-  }
+  onRadioChange(event: any){
+    console.log('Radio button selected:' + event.value);
+    this.dataService.setPage(event.value);
+  } 
 
-  getTavoloUsername(data: any){
-    this.dataUsername = data
-  }
-
-  onRadioChange(){
-    console.log('Radio button selected:', this.selectedOption);
-    this.loginVisible = false
-
-    switch (this.selectedOption) {
-      case "Sala":
-        this.tavoliVisible = true
-        break;
-      case 'Pizzeria':
-        this.pizzeriaVisible = true
-        break;
-      case 'Cucina':
-        this.cucinaVisible = true
-        break;
-    }
-
-  }  
-  
-  goToLogin(data: any){
-    this.loginVisible = true
-    this.commandaVisible = false 
-    this.pizzeriaVisible = false
-    this.tavoliVisible = false
-    this.cucinaVisible = false
-    this.check = false
-    this.selectedOption = ''
-  }
-  
 }

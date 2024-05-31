@@ -9,30 +9,25 @@ import { GenericService } from '../servizi/generic.service';
   styleUrl: './cucina.component.css'
 })
 export class CucinaComponent {
-  @Input() freq: any;
-  @Output() ToLogin = new EventEmitter<boolean>();
 
-  commanda: Commanda[] = [];
+
+  fullData: any;
+  collection_cucina: any;
+  products: any;
+  commanda: any;
+
 
   url_main: string | undefined
-  url_products: string | undefined
   url_commande: string | undefined
-  url_tavoli: string | undefined
-  url_ordinazione: string | undefined
-
-  url_collection_status: string;
-
-  intervalIdOrdinazioni: undefined | ReturnType<typeof setTimeout>;
   bellSound: HTMLAudioElement;
 
-  
+
 
   constructor(private django: DjangoService, private dataService: DataService, 
     private genericService: GenericService){
     
     this.url_main  = dataService.url_main
-    this.url_collection_status = "";
-
+  
     this.bellSound = new Audio();
     this.bellSound.src = 'assets/bell-sound-1.wav';
   }
@@ -45,115 +40,48 @@ export class CucinaComponent {
     2 -> Cucina
     3 -> Bar
     */
-
-    // Acquisico le pizze da fare dal servizio django - freq (ms)
-    this.url_collection_status = this.url_main + "commanda_collection_status/?product_collection_id=2&production_status=B";
-  
-    this.django.getData(this.url_collection_status).subscribe((data: any) =>{
+    this.dataService.productsData$.subscribe(data => {
       
-      // ordino per id crescente
-      data.sort((a: { id: number; }, b: { id: number; }) => a.id - b.id);
-      this.commanda = data;
+      // data potrebbe essere null se non è stata completata prima della risposta del server
+      if(data !== null){
+ 
+          this.products = data; 
+          console.log('Prodotti');
+          console.log(this.products)
+           
+          // ACquisisco commande e filto per collection_id 
+          this.dataService.fullData$.subscribe(data => {
+            console.log(data);
+            this.collection_cucina = this.dataService.filterCommandsByCollectionAndStatus(data, this.products, 2, 'B');
+            console.log(this.collection_cucina)  
+          });
+
+      }
+      else{console.log("Errore. Non sono riuscito ad acquisire i prodotti");}
+  
     });
 
-    this.intervalIdOrdinazioni = setInterval(()=>{
-
-      this.django.getData(this.url_collection_status).subscribe((data: any) =>{
-
-        // ordino per id crescente
-        data.sort((a: { id: number; }, b: { id: number; }) => a.id - b.id);
-        
-        if(!this.genericService.arraysAreEqual(data, this.commanda)){
-          
-          if(this.checkSuondCondition(this.commanda,data)){
-            this.bellSound.play();
-          }
-
-          this.commanda = data;
-        
-          
-        }
-
-      });
-    }, this.freq);
-    
   }
 
-
-  //remove(element: any){this.commandaComponent.remove(element)}
   remove(element: any){
-
     var result = window.confirm("Confermi di voler eliminare?");
-
-    if(result){
-      this.django.deleteData(this.dataService.urls.commande + element.id + "/").subscribe((data: any) =>{
-
-        this.django.getData(this.url_collection_status).subscribe((data: any) =>{
-          this.commanda = data;
-          console.log(data);
-        });
-  
+    if(result){      
+      console.log(this.dataService.urls.commande + element.commanda__id + "/")
+      this.django.deleteData(this.dataService.urls.commande + element.commanda__id + "/").subscribe((data: any) =>{
+        this.dataService.fetchCommandeOnce();
       });
     }
-
   }
-
   
-  //change_production_status(data: any, status: any){this.commandaComponent.change_production_status(data, status)}
   change_production_status(data: any, status: any){
-    
-    console.log(data)
-
-    var body =
-    {
-      "production_status": status
-    }
-
-    this.django.doModify(this.dataService.urls.commande + data.id + "/", body).subscribe((data: any) =>{
-      this.django.getData(this.url_collection_status).subscribe((data: any) =>{
-        this.commanda = data;
-        console.log(data);
-      
-      });
+    var body ={"production_status": status}
+    this.django.doModify(this.dataService.urls.commande + data.commanda__id + "/", body).subscribe((data: any) =>{
+      this.dataService.fetchCommandeOnce(); 
     });
-
   }
 
-  ngOnDestroy(): void {
-    console.log("ngOnTavoloDestroy");
-    clearInterval(this.intervalIdOrdinazioni);
-  }
-
-  toLogin(data: any){
-    console.log("toLogin")
-    this.ToLogin.emit(true)
-  }
-
-  checkSuondCondition(arr1: any[], arr2: any[]): boolean {
-    
-    var id1_max = 0;
-    arr1.forEach(element1 => {
-      if(element1.id > id1_max){id1_max = element1.id}
-    });
-    
-    var id2_max = 0;
-    arr2.forEach(element2 => {
-      if(element2.id > id2_max){id2_max = element2.id}
-    });
-    
-    if(id2_max > id1_max){
-      return true;
-    }
-    else{
-      return false;
-    }
-    
-  }
+  setPage(data: string){this.dataService.setPage(data)}
 }
-
-
-
-
 
 
 export interface Commanda{

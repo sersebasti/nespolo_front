@@ -10,16 +10,13 @@ import { GenericService } from '../servizi/generic.service';
   styleUrl: './pizzeria.component.css'
 })
 export class PizzeriaComponent {
-  @Input() freq: any;
-  @Output() ToLogin = new EventEmitter<boolean>();
 
-  commanda: Commanda[] = [];
-
-
-  url_collection_status: string;
-
-  intervalIdOrdinazioni: undefined | ReturnType<typeof setTimeout>;
   
+  fullData: any;
+  collection_pizze: any;
+  products: any;
+  commanda: any;
+
 
   url_main: string | undefined
   url_commande: string | undefined
@@ -29,7 +26,6 @@ export class PizzeriaComponent {
     private genericService: GenericService){
     
     this.url_main  = dataService.url_main
-    this.url_collection_status = "";
 
     this.bellSound = new Audio();
     this.bellSound.src = 'assets/bell-sound-1.wav';
@@ -39,93 +35,67 @@ export class PizzeriaComponent {
 
   ngOnInit(): void {
 
-    console.log("on init")
     /*
     collection_id:
     1 -> Pizzeria
     2 -> Cucina
     3 -> Bar
     */
-    // Acquisico le pizze da fare dal servizio django - freq (ms)
-    this.url_collection_status = this.url_main + "commanda_collection_status/?product_collection_id=1&production_status=B";
-  
-    this.django.getData(this.url_collection_status).subscribe((data: any) =>{
-      // ordino per id crescente
-      data.sort((a: { id: number; }, b: { id: number; }) => a.id - b.id);
-      this.commanda = data;
+    this.dataService.productsData$.subscribe(data => { 
+      // data potrebbe essere null se non è stata completata prima della risposta del server
+      if(data !== null){
+ 
+          this.products = data; 
+          console.log('Prodotti');
+          console.log(this.products)
+           
+          // ACquisisco commande e filto per collection_id 
+          this.dataService.fullData$.subscribe(data => {
+            console.log(data);
+            this.collection_pizze = this.dataService.filterCommandsByCollectionAndStatus(data, this.products, 1, 'B');
+            console.log(this.collection_pizze)  
+          });
+      }
+      else{console.log("Errore. Non sono riuscito ad acquisire i prodotti");}
     });
 
-    this.intervalIdOrdinazioni = setInterval(()=>{
-
-    
-      this.django.getData(this.url_collection_status).subscribe((data: any) =>{
-
-        // ordino per id crescente
-        data.sort((a: { id: number; }, b: { id: number; }) => a.id - b.id)
-
-        if(!this.genericService.arraysAreEqual(data, this.commanda)){
-          
-          if(this.checkSuondCondition(this.commanda,data)){
-            this.bellSound.play();
-          }
-
-          this.commanda = data;
-        }
-
-     
-
-
-      });
-    }, this.freq);
-
-
-    
   }
 
-
-  //remove(element: any){this.commandaComponent.remove(element)}
   remove(element: any){
-
     var result = window.confirm("Confermi di voler eliminare?");
-
     if(result){      
-      this.django.deleteData(this.dataService.urls.commande + element.id + "/").subscribe((data: any) =>{
-
-        this.django.getData(this.url_collection_status).subscribe((data: any) =>{
-          this.commanda = data;
-          console.log(data);
-        });
-  
+      console.log(this.dataService.urls.commande + element.commanda__id + "/")
+      this.django.deleteData(this.dataService.urls.commande + element.commanda__id + "/").subscribe((data: any) =>{
+        this.dataService.fetchCommandeOnce();
       });
     }
 
   }
-
   
-  //change_production_status(data: any, status: any){this.commandaComponent.change_production_status(data, status)}
   change_production_status(data: any, status: any){
-
     var body ={"production_status": status}
-
-    this.django.doModify(this.dataService.urls.commande + data.id + "/", body).subscribe((data: any) =>{
-      this.django.getData(this.url_collection_status).subscribe((data: any) =>{
-        this.commanda = data;
-        console.log(data);
-      });
+    this.django.doModify(this.dataService.urls.commande + data.commanda__id + "/", body).subscribe((data: any) =>{
+      this.dataService.fetchCommandeOnce(); 
     });
-
   }
 
-  ngOnDestroy(): void {
-    console.log("ngOnTavoloDestroy");
-    clearInterval(this.intervalIdOrdinazioni);
-  }
+  setPage(data: string){this.dataService.setPage(data)}
+}
 
-  toLogin(data: any){
-    console.log("toLogin")
-    this.ToLogin.emit(true)
-  }
+export interface Commanda{
+  id: number;
+  quantity: number;
+  product_id: number;
+  tavolo_id: number;
+  production_status: string;
+  note: string;
+  product__collection_id: number;
+  product__title: string;
+  tavolo__nome: string
+}
 
+
+  /*
   checkSuondCondition(arr1: any[], arr2: any[]): boolean {
     
     var id1_max = 0;
@@ -146,18 +116,4 @@ export class PizzeriaComponent {
     }
     
   }
-
-}
-
-
-export interface Commanda{
-  id: number;
-  quantity: number;
-  product_id: number;
-  tavolo_id: number;
-  production_status: string;
-  note: string;
-  product__collection_id: number;
-  product__title: string;
-  tavolo__nome: string
-}
+  /**/

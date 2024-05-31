@@ -1,7 +1,9 @@
 import { Component, EventEmitter, Input, Output, ChangeDetectorRef, Renderer2, ElementRef } from '@angular/core';
 import { DjangoService } from '../servizi/django.service';
-import { DataService } from '../servizi/data.service';
+import { DataService, Product, Commanda } from '../servizi/data.service';
 import { GenericService } from '../servizi/generic.service';
+import { AnimateTimings } from '@angular/animations';
+
 
 //import { Product } from './product.interface.ts'; 
 
@@ -14,27 +16,37 @@ import { GenericService } from '../servizi/generic.service';
 
 
 export class CommandaComponent {
-  @Input() freq: any;
+  
+  selectedTable: number = 0;
+  numeroCoperti: number = 0;
+  fullData: any;
 
-  @Input() dataTavolo: any;
-  @Output() ToTavoli = new EventEmitter<boolean>();
+  selected_commanda!: Commanda[];
+  
+  commanda: any;
+  elementiConto: any;
+  selected_commanda_element: number | undefined;
 
   
-  //mostra e nasconde gli ordini durante la modifica delle info dei prodotti selezionati
-  ordiniVisible: boolean | undefined
+  nomeTavolo: string = '';
+
+  ordiniVisible: boolean = true;
+
+  quantity: number = 0;
+  selectedRadioValue: number = 0;
+  textareaContent: string = ''; 
+  
+
   contoVisible: boolean | undefined
   conto_tot: number | undefined
   conto_contine_altro: number = 0;
-  coperti: number | undefined 
+  coperti: number | undefined
   
-  products: Product[] = [];
-  commanda: Commanda[] = [];
-
-  selected_commanda: Commanda[] = [];
+  
   filtered_products: Product[] = [];
   selected_product: Product[] = [];
 
-  elementiConto: Conto[] = [];
+ 
   displayedColumns: string[] = ['product__title', 'total_quantity', 'total_price'];
 
 
@@ -51,57 +63,426 @@ export class CommandaComponent {
   url_tavolo_no_status: string = '';
 
   prezzo_coperto: number = 1.5;
-  numero_coperti: number = 1;
   title_coperti: string = "Coperti"
   isViewInitialized: boolean | undefined;
   
   
-
   tavoli: any;
   bellSound: HTMLAudioElement;
+  commandeData: any;
+  products: any;
+  overallTotalPriceString: string | undefined;
+
 
 
   constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService, 
     private cdr: ChangeDetectorRef, private renderer: Renderer2, private elementRef: ElementRef){
-    
     this.bellSound = new Audio();
     this.bellSound.src = 'assets/bell-sound-1.wav';
-
-    // Acquisico i prodotti dal servizio dati 
-    this.dataService.sharedData$.subscribe((data: any) => {
-      this.products = JSON.parse(data)
-      console.log(this.products) 
-    });
-
-
   }
   
   ngOnInit(): void {
-    
-    this.url_main  = this.dataService.urls.main
 
-    this.ordiniVisible = true
-    this.contoVisible = false
 
-    // Identifico il tavolo
-    console.log(this.dataTavolo)
-
-    //acquisico tutte gli elementi commanda eccetto quelli in stato D = 'Servito'
-    this.url_tavolo_no_status = this.url_main + "commanda_tavolo_nostatus/?tavolo=" + this.dataTavolo.id + "&production_status=D";
-
-    
-    // Acquisico Ordinazioni dal servizio django 
-    this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
-      console.log(data)
-      this.commanda = data;
+    // Acquisico i prodotti
+    this.dataService.productsData$.subscribe(data => {
       
+        // data potrebbe essere null se non è stata completata prima della risposta del server
+        if(data !== null){
+   
+            this.products = data; 
+            console.log('Prodotti');
+            console.log(this.products)
+
+            // Mosta ordini
+            this.ordiniVisible = true;
+            
+            // Identifico il tavolo selezionato
+            this.dataService.getSelectedTable((selectedTableID, numeroCoperti) => {
+
+              this.selectedTable = selectedTableID;
+              this.numeroCoperti = numeroCoperti;
+
+              console.log('Tavolo selezionato: ' + this.selectedTable)
+              console.log('Numero Coperti: ' + this.numeroCoperti)
+              
+              // Seleziono un array da tabella identificato dal tavolo selezionato
+              // Se non ci sono ordinazioni comunque ritorna un array di un solo elemento indicate 
+              // il i dati del tavolo e gl'altri campi nulli
+              this.dataService.fullData$.subscribe(data => {
+                this.commanda = this.updateCommandaData(data,  this.selectedTable);
+                console.log(this.commanda);
+              });
+
+            });
+
+
+
+        }
+        else{console.log("Errore. Non sono riuscito ad acquisire i prodotti");}
+    
+    
+    });
+    
+  
+  }
+
+  // Update data 
+
+  updateCommandaData(data: any[], selectedTableID: number){
+    let commanda: any;
+
+    //  Filtro i dati per il tavolo selezionato 
+    this.selected_commanda = data.filter((item: { id: number; }) => item.id === selectedTableID);
+    
+    console.log(this.selected_commanda.length);
+    // Identifico il nome del tavolo
+    // Controllo se tutti gli elementi hanno lo stesso nome del tavolo
+    const sameNome = this.selected_commanda.every((item, index, array) => item.nome === array[0].nome);
+
+    if (sameNome && this.selected_commanda.length > 0) {
+        // Extract the "nome" value since it's the same for all elements
+        const nomeValue = this.selected_commanda[0].nome;
+        this.nomeTavolo = nomeValue;
+    } else {console.log("The 'nome' values are not the same for all elements or there no elements.");}
+
+    // Elimino gli con commanda__id = null (solo il tavolo senza nessun ordine) - - che non voglio far vedere
+    commanda = this.selected_commanda.filter((item: { commanda__id: number | undefined; }) => item.commanda__id !== null); 
+
+    // ordina gli elementi per id commanda desc 
+    commanda.sort((a: { commanda__id: number }, b: { commanda__id: number }) => -b.commanda__id + a.commanda__id);
+
+    return commanda;
+
+  }
+  
+  // Funzione che cerca i prodotti quando l'utente scrive nel campo testuale
+  cercaProdotto(event:any): any{
+    
+    this.cercaVisible = true
+    
+    let inputElement = event.target as HTMLInputElement;
+    console.log('Input value:' + inputElement.value.length, inputElement.value);
+
+    let arr_input = inputElement.value.split(' ')
+    this.filtered_products = this.products
+    let count = 0
+    arr_input.forEach(searchStr => {
+      if (searchStr.length >= 2){
+        count = count + 1
+        this.filtered_products = this.filtered_products.filter((product: Product) => product.title.toLowerCase().includes(searchStr.toLowerCase()))
+        console.log(this.filtered_products)
+      }
+    })
+    
+    // Detect changes after the part of the page has been recreated
+    this.cdr.detectChanges();
+
+    if(count == 0){this.filtered_products = []}
+
+    return [this.filtered_products, arr_input[arr_input.length-1]]
+  }
+
+  onSelectedProductEnter(event: any){
+
+    (<HTMLInputElement>event.target).blur();
+    console.log(event)
+    
+    this.selected_product = this.cercaProdotto(event)[0];
+    if(this.selected_product.length == 1){
+       console.log("ok un solo prodotto rimasto: " + this.selected_product[0].title)
+       console.log("ultima stinga di ricerca è: " + this.cercaProdotto(event)[1])
+       this.add_product_pending(this.selected_product[0], this.cercaProdotto(event)[1])
+    }
+
+  }
+
+  onSelectedProductChip(sel_product: any){
+    console.log("ok selezionato prodotto: " + sel_product.title)
+    this.add_product_pending(sel_product, "1")
+  }
+
+  add_product_pending(product_to_add: any, last_str: string){
+    
+    let quantity = 1
+    // se per ultimo ho digitato un numero inserico quel numoro di prodotti
+    let parsedValue = parseInt(last_str, 10);
+    if(!isNaN(parsedValue) && Number.isInteger(parsedValue) && parsedValue > 0){
+       quantity = parsedValue
+    }
+
+    let body =   {
+      "tavolo": this.selectedTable,
+      "product": product_to_add.id,
+      "quantity": quantity
+    }
+
+    console.log(body);
+    // Insert new product commanda
+    this.django.doCreate(this.dataService.urls.commande, body).subscribe((response: any) => {
+          console.log(JSON.stringify(response));
+          
+          // Aggiorno i dati della commanda sul servizio che poi sono aggiornati in questo componente
+          this.dataService.fetchCommandeOnce();
+          
+          // Cancello testo prodotto cercato e nascondo prodotto crecati
+          const myInputField = document.getElementById('searchInputField') as HTMLInputElement;
+          myInputField.value = "";
+          this.cercaVisible = false
+               
+          // Nel caso uno sceglie altro subito apre finestra per descrizione
+          if (response.product_title == "altro Bar" || response.product_title == "altro Cucina" || response.product_title == "altro Pizzeria"){
+            this.modificaElementoCommanda(response);
+          }
+
+    });
+  }
+
+  modificaElementoCommanda(element_to_mod: any){
+    console.log("Elemnto selezionato da modificare: ")
+    console.log(element_to_mod);
+    
+    // Serve per identifiacare quale è l'elemento da modificare 
+    this.selected_commanda_element = element_to_mod.commanda__id;
+
+    this.textareaContent = element_to_mod.commanda__note;
+    this.selectedRadioValue = element_to_mod.commanda__quantity;
+
+    if(element_to_mod.commanda__production_status == 'A'){
+      this.ordiniVisible = false
+    } 
+
+  }
+
+  closeModificaElementoCommanda(){
+    this.ordiniVisible = true
+  }
+
+  remove(element: any){
+    console.log(this.dataService.urls.commande + element.commanda__id + "/")
+    this.django.deleteData(this.dataService.urls.commande + element.commanda__id + "/").subscribe((data: any) =>{
+      // Aggiorno i dati della commanda sul servizio che poi sono aggiornati in questo componente
+      this.dataService.fetchCommandeOnce();
+    });
+  }
+
+
+    // Method to handle radio button selection
+  onRadioSelected(value: number) {
+      this.selectedRadioValue = value;
+      this.quantity = value; 
+  }
+
+  // Method to handle Enter key press in the textarea
+  onEnterPressed(event: Event) {
+    const keyboardEvent = event as KeyboardEvent;
+    if (keyboardEvent.key === 'Enter') { // Check if the pressed key is Enter
+      this.aggiornaElementoCommanda(); // Trigger the method to update variables
+    }
+  }
+  
+  aggiornaElementoCommanda(){
+    var body =
+    {
+      "quantity": this.quantity,
+      "note": this.textareaContent
+    }
+
+    this.django.doModify(this.dataService.urls.commande + this.selected_commanda_element + "/", body).subscribe((data: any) =>{
+      this.dataService.fetchCommandeOnce();
+      this.ordiniVisible = true
     });
 
+  }
+
+  change_production_status(data: any, status: any){
+    
+    var body ={"production_status": status}
+    this.django.doModify(this.dataService.urls.commande + data.commanda__id + "/", body).subscribe((data: any) =>{
+  
+      this.dataService.fetchCommandeOnce(); 
+
+      // Subscribing to fullData$ to execute code after the fetch completes
+      this.dataService.fullData$.subscribe((data: any) => {
+          // Your code to execute after the fetch completes
+          if (status === 'D' && this.contoVisible) {
+              this.conto('no-toggle');
+          }
+      });
+
+    });
+
+  }
+
+  conto(str: any){
+    
+    console.log(str);
+    if(str == 'toggle'){this.contoVisible = !this.contoVisible}
+
+    const productAggregation: { [key: number]: ProductAggregation } = {};
+
+    const aggregatedDataArray: ProductAggregation[] = [{
+      productTitle: 'Coperto',
+      totalQuantity: this.numeroCoperti,
+      totalPrice: (this.numeroCoperti * this.prezzo_coperto).toFixed(2), // Ensure the price is properly formatted
+      commanda__note: null
+    }];
+
+    console.log(this.prezzo_coperto);
+    console.log(this.commanda.coperti);
+
+    let hasSpecialTitle = false;
+
+    this.commanda.forEach((elem: { commanda__production_status: string; commanda__product_id: any; commanda__product__title: any; commanda__product__price: string; commanda__quantity: any; commanda__note: null; }) => {
+      hasSpecialTitle = false;
+
+      if (elem.commanda__production_status === 'D') {
+        const productId = elem.commanda__product_id;
+        const productTitle = elem.commanda__product__title;
+        const productPrice = parseFloat(elem.commanda__product__price);
+        const productQuantity = elem.commanda__quantity;
+
+        if (productTitle === "altro Bar" || productTitle === "altro Cucina" || productTitle === "altro Pizzeria") {
+          hasSpecialTitle = true;
+        }
+
+        // If there's a note, treat it as a separate entry
+        if (elem.commanda__note !== null) {
+          aggregatedDataArray.push({
+            productTitle: `${productTitle} (${elem.commanda__note})`,
+            totalQuantity: productQuantity,
+            totalPrice: hasSpecialTitle ? 'X' : (productPrice * productQuantity).toFixed(2),
+            commanda__note: elem.commanda__note
+          });
+        } 
+        else{
+
+          if (!productAggregation[productId]) {
+            productAggregation[productId] = {
+            productTitle: productTitle,
+            totalQuantity: 0,
+            totalPrice: (productPrice * productQuantity).toFixed(2),
+            commanda__note: null
+            };
+          }
+
+          productAggregation[productId].totalQuantity += productQuantity;
+
+          if (!hasSpecialTitle){
+            productAggregation[productId].totalPrice = (Number(productPrice * productAggregation[productId].totalQuantity).toFixed(2));
+          }
+          else{
+            productAggregation[productId].totalPrice = 'X';
+          }
+
+        }
+
+
+
+      }
+    });
+
+    // Convert the aggregation object to an array for easy display
+    Object.values(productAggregation).forEach(item => aggregatedDataArray.push(item));
+
+    // Calculate the overall total price, excluding special titles
+    let overallTotalPrice = aggregatedDataArray.reduce((acc, item) => {
+      if (item.totalPrice !== 'X') {
+        return acc + parseFloat(item.totalPrice as string);
+      }
+      return acc;
+    }, 0);
+
+
+    
+
+    this.overallTotalPriceString = overallTotalPrice.toFixed(2);
+
+    const hasX = aggregatedDataArray.some(item => item.totalPrice === 'X');
+    if (hasX) {this.overallTotalPriceString += " + X";}
+
+
+    this.elementiConto = aggregatedDataArray;
+
+    console.log(this.elementiConto);
+    console.log(this.overallTotalPriceString);
+
+  }
+
+  toggleContoVisible(str: string) {
+    if (str === 'toggle') {
+      this.contoVisible = !this.contoVisible;
+    }
+  }
+
+
+  setPage(data: string){this.dataService.setPage(data)}
+
+
+  /*
+  ngOnDestroy(): void {
+    console.log("ngOnTavoloDestroy");
+    clearInterval(this.intervalIdOrdinazioni);
+  }
+  */
+   /*
+  ngAfterViewInit(): void {
+    // This code will run after the component's view has been initialized
+    this.isViewInitialized = true;
+    this.onLoad();
+  }
+
+  onLoad(): void {
+    if (this.isViewInitialized) {
+      
+      const element = document.getElementById('prodotto_filtrati');
+
+      if (element) {
+        const height = element.offsetHeight;
+        console.log('Element height:', height);
+      } else {
+        console.error('Element not found');
+      }
+
+
+    }
+  }
+  /**/
+
+
+}
+
+
+
+/*
+export interface Conto{
+  product_price: any;
+  product__title: string;
+  total_quantity: number;
+  total_price: string;
+}
+/**/ 
+
+export interface GroupedOrders {
+  [tavoloId: number]: { tavoloId: number; tavolo_nome: string, status_AC_Count: number, status_C_Count: number};
+}
+
+export interface ProductAggregation {
+  productTitle: string;
+  totalQuantity: number;
+  totalPrice: string;
+  commanda__note: string | null;
+}
+
+
+
     // Tavoli solo per il suono 
+    /*
     this.django.getData(this.dataService.urls.tavoli_status).subscribe((data_tavoli: any) =>{
       this.tavoli = data_tavoli;
       console.log(data_tavoli)
     });
+    /** /
 
     this.intervalIdOrdinazioni = setInterval(()=>{
 
@@ -138,292 +519,4 @@ export class CommandaComponent {
 
 
     }, this.freq);
-  
-  }
-
-  ngOnDestroy(): void {
-    console.log("ngOnTavoloDestroy");
-    clearInterval(this.intervalIdOrdinazioni);
-  }
-
-  toTavoli(event: any){
-    console.log("toTavoli")
-    this.ToTavoli.emit(true)
-  }
-
-  cercaProdotto(event:any): any{
-    
-    this.cercaVisible = true
-    
-    let inputElement = event.target as HTMLInputElement;
-    console.log('Input value:' + inputElement.value.length, inputElement.value);
-
-    let arr_input = inputElement.value.split(' ')
-    this.filtered_products = this.products
-    let count = 0
-    arr_input.forEach(searchStr => {
-      if (searchStr.length >= 2){
-        count = count + 1
-        this.filtered_products = this.filtered_products.filter((product: Product) => product.title.toLowerCase().includes(searchStr.toLowerCase()))
-        console.log(this.filtered_products)
-      }
-    })
-    
-    // Detect changes after the part of the page has been recreated
-    this.cdr.detectChanges();
-
-  
-
-    if(count == 0){this.filtered_products = []}
-
-    return [this.filtered_products, arr_input[arr_input.length-1]]
-  }
-
-
-
-  ngAfterViewInit(): void {
-    // This code will run after the component's view has been initialized
-    this.isViewInitialized = true;
-    this.onLoad();
-  }
-
-  onLoad(): void {
-    if (this.isViewInitialized) {
-      
-      const element = document.getElementById('prodotto_filtrati');
-
-      if (element) {
-        const height = element.offsetHeight;
-        console.log('Element height:', height);
-      } else {
-        console.error('Element not found');
-      }
-
-
-    }
-  }
-
-  checkInput(products: any, str: string) {
-    return products.title.includes(str)
-  }
-  
-  
-  onSelectedProductEnter(event: any){
-
-    (<HTMLInputElement>event.target).blur();
-    console.log(event)
-    
-    this.selected_product = this.cercaProdotto(event)[0];
-    if(this.selected_product.length == 1){
-       console.log("ok un solo prodotto rimasto: " + this.selected_product[0].title)
-       console.log("ultima stinga di ricerca è: " + this.cercaProdotto(event)[1])
-       this.add_product_pending(this.selected_product[0], this.cercaProdotto(event)[1])
-    }
-
-  }
-
-  onSelectedProductChip(sel_product: any){
-    console.log("ok selezionato prodotto: " + sel_product.title)
-    this.add_product_pending(sel_product, "1")
-  }
-
-  add_product_pending(product_to_add: any, last_str: string){
-    
-
-    let quantity = 1
-    // se per ultimo ho digitato un numero inserico quel numoro di prodotti
-    let parsedValue = parseInt(last_str, 10);
-    if(!isNaN(parsedValue) && Number.isInteger(parsedValue) && parsedValue > 0){
-       quantity = parsedValue
-    }
-
-    let body =   {
-      "tavolo": this.dataTavolo.id,
-      "product": product_to_add.id,
-      "quantity": quantity
-    }
-
-    console.log(body);
-    // Insert new product commanda
-    this.django.doCreate(this.dataService.urls.commande, body).subscribe((response: any) => {
-            console.log(JSON.stringify(response));
-            
-            this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
-              this.commanda = data;
-              console.log(data);
-              
-              const myInputField = document.getElementById('searchInputField') as HTMLInputElement;
-              // Set the value to null
-              myInputField.value = "";
-              this.cercaVisible = false
-               
-              // Nel cao uno sceglie altro subito apre finestra per descrizione
-              if (response.product_title == "altro Bar" || response.product_title == "altro Cucina" || response.product_title == "altro Pizzeria"){
-                this.modificaElementoCommanda(response);
-              }
-           
-            });
-    });
-  }
-
-  modificaElementoCommanda(element_to_mod: any){
-    if(element_to_mod.production_status == 'A'){
-      this.ordiniVisible = false
-      this.selected_commanda = []
-      this.selected_commanda.push(element_to_mod)
-      console.log(element_to_mod)
-      console.log(this.selected_commanda)
-    }
-  }
-
-  closeModificaElementoCommanda(){
-    this.ordiniVisible = true
-  }
-
-  remove(element: any){
-    console.log('qui')
-    console.log('qui' + this.dataService.urls.commande + element.id + "/")
-    this.django.deleteData(this.dataService.urls.commande + element.id + "/").subscribe((data: any) =>{
-
-      this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
-        this.commanda = data;
-        console.log(data);
-      });
-
-    });
-  }
-
-  upDateRadio(event: any){
-    this.selected_commanda[0].quantity = event.value
-    console.log(event.value)
-  }
-  
-  aggiornaElementoCommanda(){
-    
-    var body =
-    {
-      "id": this.selected_commanda[0].id,
-      "tavolo": this.selected_commanda[0].tavolo,
-      "product": this.selected_commanda[0].product,
-      "product_title": this.selected_commanda[0].product_title,
-      "quantity": this.selected_commanda[0].quantity,
-      "production_status": this.selected_commanda[0].production_status,
-      "note": this.selected_commanda[0].note
-    }
-
-    this.django.doModify(this.dataService.urls.commande +  this.selected_commanda[0].id + "/", body).subscribe((data: any) =>{
-
-      this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
-        this.commanda = data;
-        console.log(data);
-        this.ordiniVisible = true
-      });
-
-    });
-
-  }
-
-  change_production_status(data: any, status: any){
-
-    var body ={"production_status": status}
-
-    this.django.doModify(this.dataService.urls.commande + data.id + "/", body).subscribe((data: any) =>{
-      this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
-        this.commanda = data;
-        console.log(data);
-         if(status = 'D' && this.contoVisible){this.conto('no-toggle')}
-      });
-    });
-
-  }
-
-  conto(str: any){
-    if(str == 'toggle'){this.contoVisible = !this.contoVisible}
-    
-    
-    // Acquisico Coperti dal servizio django 
-    this.url_tavolo = this.url_main + "tavoli/" + this.dataTavolo.id + "/";
-    this.django.getData(this.url_tavolo).subscribe((data: any) =>{
-
-      this.numero_coperti = data.coperti;
-      
-      var url_tavolo_status = this.url_main + "commanda_elementi_conto/?tavolo=" + this.dataTavolo.id
-      this.django.getData(url_tavolo_status).subscribe((data: any) =>{
-        this.elementiConto = data
-        
-        this.elementiConto.push({product__title: this.title_coperti, total_quantity:this.numero_coperti, total_price: (this.prezzo_coperto * this.numero_coperti).toString()})
-        
-        let total = 0;
-        for (let i = 0; i < this.elementiConto.length; i++) {
-          const element = this.elementiConto[i];
-          if (!this.check_altro(element)) {
-            total += parseFloat(element.total_price);
-            console.log(parseFloat(element.total_price));
-            console.log(this.check_altro(element));
-          }
-          else{
-            this.conto_contine_altro = 1;
-          }
-       
-        }
-        this.conto_tot = total;
-  
-        //this.conto_tot = parseInt(this.conto['tot_price'],10).reduce((sum, product) => sum + product.price, 0);
-        console.log(data);
-      });
-
-    });
-
-  }
-
-  check_altro(elem: any){
-    if (elem.product__title == "altro Bar" || elem.product__title == "altro Cucina" || elem.product__title == "altro Pizzeria"){
-      return 1;
-    }
-    else{return 0;}
-  }
-
-
-
-  checkSuondCondition(arr1: any[], arr2: any[]): boolean {
-    
-    for (let i = 0; i < arr1.length; i++) {
-      const matchingElement = arr2.find(item => item.id === arr1[i].id);
-      if (matchingElement && matchingElement.status_A > arr1[i].status_A) {
-          return true;
-      }
-    }
-
-    return false;
-  }
-
-
-
-}
-
-export interface Product {
-  id: number;
-  title: string;
-  price: number;
-  description: string;
-  collection: number;
-  tipo_prodotto: number;
-}
-
-export interface Commanda{
-  id: number;
-  tavolo: number;
-  product: number;
-  product_title: string;
-  product_price: number;
-  product_collection_id: number;
-  quantity: number;
-  production_status: string;
-  note: string;
-}
-
-export interface Conto{
-  product__title: string;
-  total_quantity: number;
-  total_price: string;
-}
+    */

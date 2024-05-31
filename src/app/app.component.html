@@ -1,20 +1,17 @@
-<div class="local_body" *ngIf="loginVisible">
+<div class="local_body" *ngIf="showMain">
     <p class="title">App Commanda<p>
     <p >Version {{version}}<p>
-    <mat-radio-group
-      aria-labelledby="example-radio-group-label"
-      class="example-radio-group"
-      [(ngModel)]="selectedOption" (change)="onRadioChange()">
-     
-      @for (ruolo of ruoli; track ruoli) {
-        <mat-radio-button class="radio-button" [value]="ruolo" checked="check"><label style="font-weight: bold;">{{ruolo}}</label></mat-radio-button>
-      }
+    <mat-radio-group aria-labelledby="example-radio-group-label" class="example-radio-group" (change)="onRadioChange($event)">
+      
+      <mat-radio-button class="radio-button" value="tavoli"><label style="font-weight: bold;">Sala</label></mat-radio-button>
+      <mat-radio-button class="radio-button" value="pizzeria"><label style="font-weight: bold;">Pizzeria</label></mat-radio-button>
+      <mat-radio-button class="radio-button" value="cucina"><label style="font-weight: bold;">Cucina</label></mat-radio-button>
+
     </mat-radio-group>
     <div></div>
-
 </div>
 
-<app-tavolo [freq]="freq" (sendTavoloData)="getTavoloData($event)" (ToLogin)="goToLogin($event)" *ngIf="tavoliVisible"></app-tavolo>
-<app-commanda [freq]="freq" [dataTavolo]="dataTavolo"  (ToTavoli)="goToTavoli($event)" *ngIf="commandaVisible"></app-commanda>
-<app-pizzeria [freq]="freq" *ngIf="pizzeriaVisible" (ToLogin)="goToLogin($event)"></app-pizzeria>
-<app-cucina [freq]="freq" *ngIf="cucinaVisible" (ToLogin)="goToLogin($event)"></app-cucina>
+<app-tavolo *ngIf="showTavoli"></app-tavolo>
+<app-commanda  *ngIf="showCommanda"></app-commanda>
+<app-pizzeria  *ngIf="showPizzeria"></app-pizzeria>
+<app-cucina  *ngIf="showCucina"></app-cucina>

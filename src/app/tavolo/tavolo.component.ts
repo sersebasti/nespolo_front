@@ -11,23 +11,16 @@ import { GenericService } from '../servizi/generic.service';
   styleUrl: './tavolo.component.css'
 })
 export class TavoloComponent {
-  @Input() freq: any;
-  @Output() sendTavoloData = new EventEmitter<string>();
+  
   @Output() ToLogin = new EventEmitter<boolean>();
   
-
-  products: any;
   tavoli: any;
-
-  intervalIdTavoli: undefined | ReturnType<typeof setTimeout>; 
-  
+  //intervalIdTavoli: undefined | ReturnType<typeof setTimeout>; 
   inputData: any;
   coperti: any;
   bellSound: any;
-  
-  // da fare: se ci sono molti tavoli il bottone su deve spostare più in basso
-  //molti_tav = false
 
+  
   constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService){
     this.bellSound = new Audio();
     this.bellSound.src = 'assets/bell-sound-1.wav';
@@ -35,143 +28,112 @@ export class TavoloComponent {
   
   ngOnInit(): void {
     
-    // Test 
-    //console.log("Test");
-
-    // Get Tavoli
-    console.log("ngOndTavoloInit");
-    this.django.getData(this.dataService.urls.tavoli_status).subscribe((data: any) =>{
-      this.tavoli = data;
-      console.log(data)
-    });
-    
-    // Update Tavoli - freq (ms)
-    this.intervalIdTavoli = setInterval(()=>{
-      this.django.getData(this.dataService.urls.tavoli_status).subscribe((data: any) =>{
-        
-        console.log(data)
-        
-        if(this.checkSuondCondition(this.tavoli,data)){
-          this.bellSound.play();
-        }
-
-        if(!this.genericService.arraysAreEqual(data,this.tavoli)){
-          this.tavoli = data;
-          console.log(this.tavoli);
-        }
-        
-        
-      });
-    }, this.freq);
-    
-    // Get Products
-    this.django.getData(this.dataService.urls.products).subscribe((data: any) =>{
-      this.products = data;
-      console.log(this.products);
-      //send poducts to data service as json file
-      this.dataService.updateData(JSON.stringify(this.products));
-    });
-  }
-
-  ngOnDestroy(): void {
-    console.log("ngOnTavoloDestroy");
-    clearInterval(this.intervalIdTavoli);
-  }
-
-
-  onEnterKeyPressed(event: KeyboardEvent): void {
-    
-
-    // Check if the pressed key is "Enter"
-    if (event.key === 'Enter') {
-       
+    // Aquisico full data
+    this.dataService.fullData$.subscribe(data => {
       
-      // Acquisico numero coperti
+      // data potrebbe essere null se non è stata completata a prima risposta del server
+      if(data !== null){
+        //console.log(data);
+
+        // Initialize an empty object to store the grouped orders
+        const groupedOrders: GroupedOrders = {};
+        
+        /*
+        STATUS_A = 'A'
+        STATUS_B = 'B'
+        STATUS_C = 'C'
+        STATUS_D = 'D'
+      
+        STATUS = [
+            (STATUS_A, 'SuCommanda'),
+            (STATUS_B, 'InProduzione'),
+            (STATUS_C, 'ProduzioneCompletata'),
+            (STATUS_D, 'Servito'),
+        ]
+        /**/ 
+        
+        // Loop through each order in the data array
+        data.forEach((elem: { id: any; nome: any; commanda__production_status: any; }) => {
+
+          // Extract relevant information from the current order
+          const tavoloId = elem.id;
+          const tavolo_nome = elem.nome;
+          const production_status = elem.commanda__production_status;
+
+          // Determine whether the current order contributes to AC and C counts
+          const production_status_AC_Count = production_status === 'A' || production_status === 'C' ? 1 : 0;
+          const production_status_C_Count = production_status === 'C' ? 1 : 0;
+          
+          // If the table ID doesn't exist in groupedOrders, initialize it
+          if (!groupedOrders[tavoloId]) {
+            groupedOrders[tavoloId] = { tavoloId, tavolo_nome, status_AC_Count: 0,  status_C_Count: 0};
+          }
+          
+          // Increment the counts for AC and C statuses for the current table
+          groupedOrders[tavoloId].status_AC_Count += production_status_AC_Count;
+          groupedOrders[tavoloId].status_C_Count += production_status_C_Count;
+        });
+        
+        // Convert the grouped orders object to an array and assign it to this.tavoli
+        this.tavoli = Object.values(groupedOrders);
+        //console.log(this.tavoli);
+
+      }
+    });
+
+
+  }
+  
+  // Quando aggiungo un nuovo tavolo
+  onEnterKeyPressed(event: KeyboardEvent): void {
+
+    if (event.key === 'Enter') {
+
       this.coperti = prompt("Inserisci numero coperti:")
       var intCoperti = parseInt(this.coperti);
 
-      // Check if the input is a valid integer
-      if (isNaN(intCoperti)) {
-      // Display the integer value
-      alert("Inserisci numero coperti");
-      } 
+      if (isNaN(intCoperti)) {alert("Inserisci numero coperti");} 
       else{
-        
         this.inputData = (<HTMLInputElement>event.target).value
 
-        // Insert new element Tavolo
         this.django.doCreate(this.dataService.urls.tavoli,{"nome": this.inputData, "coperti": intCoperti}).subscribe((response: any) => {
+          console.log("Creato tavolo: " + this.inputData);
           console.log(JSON.stringify(response));
-          
-          // Update Tavoli
-          this.django.getData(this.dataService.urls.tavoli).subscribe((data: any) =>{
-            this.tavoli = data;
-             
-            (<HTMLInputElement>event.target).blur();
-  
-          });
-  
         });
       }
 
     }
   }
-
+  
+  // Vado sulla commanda del tavolo
   onTavoloClick(event: any){
-   console.log(JSON.stringify(event))
-   this.sendTavoloData.emit(JSON.stringify(event))
+   console.log(JSON.stringify(event));
+
+   // Imposto valore a tavolo selezionato
+   this.dataService.setSelectedTable(event.tavoloId);
+   
+   // Visualizzo pagina commanda
+   this.setPage('commanda');
   }
 
-    //remove(element: any){this.commandaComponent.remove(element)}
-    remove(element: any){
-      
-      
-      
-      var result = window.confirm("Sicuro di voler eliminare il tavolo?");
-
-        // Check the result
-      if (result) {
-        console.log("rimuovo tavolo:" + this.dataService.urls.tavoli + element.id + "/")
-
-        this.django.deleteData(this.dataService.urls.tavoli + element.id + "/").subscribe((data: any) =>{
-         
-        
-          // Update Tavoli
-          this.django.getData(this.dataService.urls.tavoli).subscribe((data: any) =>{
-            this.tavoli = data;
-          });
-          
-        });
-        
-      } else {
-        // If user clicks Cancel or closes the dialog, cancel the delete action
-        console.log("Delete cancelled");
-      }
-      
+  // rimuovo il tavolo
+  removeTavolo(element: any){
+    var result = window.confirm("Sicuro di voler eliminare il tavolo?");
+    if (result) {
+      this.django.deleteData(this.dataService.urls.tavoli + element.tavoloId + "/").subscribe((data: any) =>{  
+        console.log("Eliminato il tavolo: " + element.tavoloId);
+      });
     }
-
-
-  toLogin(data: any){
-      console.log("toLogin")
-      this.ToLogin.emit(true)
-      clearInterval(this.intervalIdTavoli);
   }
 
-  checkSuondCondition(arr1: any[], arr2: any[]): boolean {
-    
-    for (let i = 0; i < arr1.length; i++) {
-      const matchingElement = arr2.find(item => item.id === arr1[i].id);
-      if (matchingElement && matchingElement.status_A > arr1[i].status_A) {
-          return true;
-      }
-    }
-
-    return false;
-  }
+  setPage(data: string){this.dataService.setPage(data)}
  
-
-
-
- 
-
 }
+
+// Define an interface for the grouped orders (optional, for better type checking)
+export interface GroupedOrders {
+  [tavoloId: number]: { 
+    tavoloId: number; tavolo_nome: string, status_AC_Count: number, status_C_Count: number
+  };
+}
+      

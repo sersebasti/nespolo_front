@@ -1,24 +1,24 @@
 <div class="tavoli_body">
   <p class="legend_tavoli">Tavoli</p> 
-  
+
+
   <fieldset class="fieldset_tavoli">
     <mat-chip-listbox>
 
       <mat-chip  *ngFor='let tavolo of tavoli' (click)="onTavoloClick(tavolo)">
-        <button mat-button>{{ tavolo.nome }} <span *ngIf="tavolo.status_A !== 0">({{ tavolo.status_A }})</span> </button>
-        <img matChipRemove src="../../assets/images/icons8-delete-30.png" alt="delete" (click)="remove(tavolo)"/>
+        <button mat-button>{{ tavolo.tavolo_nome }} <span *ngIf="tavolo.status_AC_Count !== 0">({{ tavolo.status_AC_Count }})</span> </button>
+        <img matChipRemove src="../../assets/images/icons8-delete-30.png" alt="delete" (click)="removeTavolo(tavolo)"/>
       </mat-chip>
 
     </mat-chip-listbox>
   </fieldset>
 
   <div  class="bottom-flex-container-1">
-    <!-- fa fare div  [ngClass]="{'bottom-flex-container': !molti_tav, 'bottom-flex-container_bis': molti_tav}"-->
     <input class="legend_add_tavoli" matInput type="text" placeholder="Nuovo Tavolo" (keydown)="onEnterKeyPressed($event)" style="border-radius: 30px">
   </div>
 
   <div  class="bottom-flex-container-2">
-      <a mat-button class="my_buttons"  (click)="toLogin($event)"><< Login</a>    
+      <a mat-button class="my_buttons"  (click)="setPage('main')"><< Login</a>    
   </div>
 
 

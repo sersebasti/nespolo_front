@@ -25,8 +25,4 @@ export class DjangoService {
     return this.http.delete(url)
   }
 
-
-
 }
-
-
