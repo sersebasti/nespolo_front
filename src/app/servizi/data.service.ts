@@ -34,7 +34,7 @@ export class DataService {
 
   urls: { main: string; products: string; commande: string; tavoli: string; tavoli_status: string; ordinazione: string; full: string;}
 
-  version: string = '1.2.0';
+  version: string = '1.3.0';
   version_back: string = '2.5.14';
 
   freq: number = 2000;
