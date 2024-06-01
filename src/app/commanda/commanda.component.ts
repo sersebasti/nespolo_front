@@ -289,9 +289,10 @@ export class CommandaComponent {
     }
   
   }
-
+  
+  // Se l'elento è di tipo alto occorre che il campo note non sia vuoto - altrimenti non si capisce cosa è
   check_TipoAltro_NotaLen(element: any){
-    if(element.commanda__note.length == 0 
+    if( (element.commanda__note === null || element.commanda__note.length == 0)
       && this.hasSpecialTitle(this.getSelectedCommandaByID(element.commanda__id).commanda__product__title)){
       return true;
     }
@@ -349,8 +350,12 @@ export class CommandaComponent {
 
         hasSpecialTitle = this.hasSpecialTitle(productTitle);
 
+
+        console.log(elem.commanda__note);
+        console.log(typeof elem.commanda__note);
         // If there's a note, treat it as a separate entry
-        if (elem.commanda__note !== null) {
+        if (typeof elem.commanda__note === 'string' && (elem.commanda__note as string).length > 0) {
+          
           aggregatedDataArray.push({
             productTitle: `${productTitle} (${elem.commanda__note})`,
             totalQuantity: productQuantity,
