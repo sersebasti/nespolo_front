@@ -30,49 +30,21 @@ export class CommandaComponent {
   nomeTavolo: string = '';
 
   ordiniVisible: boolean = true;
+  cercaVisible: boolean = false;
+  contoVisible: boolean | undefined;
 
-  quantity: number = 0;
-  selectedRadioValue: number = 0;
-  textareaContent: string = ''; 
-  
-
-  contoVisible: boolean | undefined
-  conto_tot: number | undefined
-  conto_contine_altro: number = 0;
-  coperti: number | undefined
-  
+  coperti: number | undefined;
+  prezzo_coperto: number = 1.5;
   
   filtered_products: Product[] = [];
   selected_product: Product[] = [];
 
- 
   displayedColumns: string[] = ['product__title', 'total_quantity', 'total_price'];
 
-
-  //mostra e nasconde il dati durante la ricerca prodotti
-  cercaVisible: boolean = false
-  
-  intervalIdOrdinazioni: undefined | ReturnType<typeof setTimeout>;
-  
-  url_main: string | undefined
-  url_products: string | undefined
-  url_commande: string | undefined
-  url_tavolo: string | undefined
-  url_ordinazione: string | undefined
-  url_tavolo_no_status: string = '';
-
-  prezzo_coperto: number = 1.5;
-  title_coperti: string = "Coperti"
-  isViewInitialized: boolean | undefined;
-  
-  
-  tavoli: any;
   bellSound: HTMLAudioElement;
   commandeData: any;
   products: any;
   overallTotalPriceString: string | undefined;
-
-
 
   constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService, 
     private cdr: ChangeDetectorRef, private renderer: Renderer2, private elementRef: ElementRef){
@@ -109,20 +81,14 @@ export class CommandaComponent {
               // il i dati del tavolo e gl'altri campi nulli
               this.dataService.fullData$.subscribe(data => {
                 this.commanda = this.updateCommandaData(data,  this.selectedTable);
-                console.log(this.commanda);
+                //console.log(this.commanda);
               });
 
             });
-
-
-
         }
         else{console.log("Errore. Non sono riuscito ad acquisire i prodotti");}
-    
-    
     });
     
-  
   }
 
   // Update data 
@@ -132,7 +98,7 @@ export class CommandaComponent {
     //  Filtro i dati per il tavolo selezionato 
     this.selected_commanda = data.filter((item: { id: number; }) => item.id === selectedTableID);
     
-    console.log(this.selected_commanda.length);
+    //console.log(this.selected_commanda.length);
     // Identifico il nome del tavolo
     // Controllo se tutti gli elementi hanno lo stesso nome del tavolo
     const sameNome = this.selected_commanda.every((item, index, array) => item.nome === array[0].nome);
@@ -179,7 +145,8 @@ export class CommandaComponent {
 
     return [this.filtered_products, arr_input[arr_input.length-1]]
   }
-
+  
+  // Se do l'invio che la ricerca ha indiviuto un solo prodotto - da migliorare cao numro dopo testo (da ri-fare)
   onSelectedProductEnter(event: any){
 
     (<HTMLInputElement>event.target).blur();
@@ -415,12 +382,6 @@ export class CommandaComponent {
     //console.log(this.elementiConto);
     //console.log(this.overallTotalPriceString);
 
-  }
-
-  toggleContoVisible(str: string) {
-    if (str === 'toggle') {
-      this.contoVisible = !this.contoVisible;
-    }
   }
 
   setPage(data: string){this.dataService.setPage(data)}
