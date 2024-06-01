@@ -13,23 +13,22 @@ export class CucinaComponent {
 
   fullData: any;
   collection_cucina: any;
-  products: any;
+  collection_new_things: any;
   commanda: any;
-
 
   url_main: string | undefined
   url_commande: string | undefined
-  bellSound: HTMLAudioElement;
-
-
-
-  constructor(private django: DjangoService, private dataService: DataService, 
-    private genericService: GenericService){
-    
-    this.url_main  = dataService.url_main
   
-    this.bellSound = new Audio();
-    this.bellSound.src = 'assets/bell-sound-1.wav';
+  last_to_production_ISODate: string;
+  bellSound_src: string;
+
+  constructor(private django: DjangoService, private dataService: DataService){
+    
+    this.url_main  = dataService.url_main;
+
+    this.bellSound_src = 'assets/bell-sound-2.wav';
+    this.last_to_production_ISODate = this.dataService.getCurrentISODate();
+  
   }
 
   ngOnInit(): void {
@@ -45,15 +44,26 @@ export class CucinaComponent {
       // data potrebbe essere null se non è stata completata prima della risposta del server
       if(data !== null){
  
-          this.products = data; 
-          console.log('Prodotti');
-          console.log(this.products)
-           
           // ACquisisco commande e filto per collection_id 
           this.dataService.fullData$.subscribe(data => {
-            console.log(data);
-            this.collection_cucina = this.dataService.filterCommandsByCollectionAndStatus(data, this.products, 2, 'B');
-            console.log(this.collection_cucina)  
+           
+            this.collection_cucina = this.dataService.filterCommandsByCollectionAndStatus(data, 2, 'B');
+
+            this.collection_new_things = this.dataService.filterByLastToProductionDate(this.collection_cucina, this.last_to_production_ISODate);
+            
+            console.log(this.last_to_production_ISODate);
+            if (this.collection_new_things.length > 0) {
+              console.log(this.collection_new_things.length);
+              
+              // Perform the action (e.g., make a sound)
+              this.dataService.playSound(this.bellSound_src);
+        
+              // Update last_to_production_ISODate to the most recent commanda__to_production in the filtered array
+              const mostRecentDate = new Date(Math.max(...this.collection_new_things.map((item: { commanda__to_production: string | number | Date; }) => new Date(item.commanda__to_production).getTime())));
+              this.last_to_production_ISODate = mostRecentDate.toISOString();
+              console.log(this.last_to_production_ISODate);
+            }
+            
           });
 
       }
@@ -73,25 +83,9 @@ export class CucinaComponent {
     }
   }
   
-  change_production_status(data: any, status: any){
-    var body ={"production_status": status}
-    this.django.doModify(this.dataService.urls.commande + data.commanda__id + "/", body).subscribe((data: any) =>{
-      this.dataService.fetchCommandeOnce(); 
-    });
+  handleChangeProductionStatus(element: any, status: string): void {
+    this.dataService.change_production_status(element, status);
   }
 
   setPage(data: string){this.dataService.setPage(data)}
-}
-
-
-export interface Commanda{
-  id: number;
-  quantity: number;
-  product_id: number;
-  tavolo_id: number;
-  production_status: string;
-  note: string;
-  product__collection_id: number;
-  product__title: string;
-  tavolo__nome: string
 }

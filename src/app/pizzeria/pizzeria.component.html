@@ -28,9 +28,9 @@
         <mat-chip-set aria-label="Orinazioni">
         <div *ngFor='let element of collection_pizze'>
           <mat-chip>        
-            <div>{{element.product__title }} ({{ element.commanda__quantity }}) {{element.commanda__note}} ({{element.nome}})</div>
+            <div>{{element.commanda__product__title }} ({{ element.commanda__quantity }}) {{element.commanda__note}} ({{element.nome}})</div>
             <img matChipRemove src="../../assets/images/icons8-delete-30.png" alt="delete" (click)="remove(element)"/>
-            <img matChipRemove src="../../assets/images/check.png" alt="complete" (click)="change_production_status(element,'C')"/>
+            <img matChipRemove src="../../assets/images/check.png" alt="complete" (click)="handleChangeProductionStatus(element,'C')"/>
           </mat-chip>
         </div>  
         </mat-chip-set>

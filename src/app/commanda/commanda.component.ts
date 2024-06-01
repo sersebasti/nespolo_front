@@ -26,6 +26,7 @@ export class CommandaComponent {
 
   commanda: any;
   elementiConto: any;
+  commanda_prodotte: any;
   
   nomeTavolo: string = '';
 
@@ -41,19 +42,25 @@ export class CommandaComponent {
 
   displayedColumns: string[] = ['product__title', 'total_quantity', 'total_price'];
 
-  bellSound: HTMLAudioElement;
+  
   commandeData: any;
   products: any;
   overallTotalPriceString: string | undefined;
 
-  constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService, 
-    private cdr: ChangeDetectorRef, private renderer: Renderer2, private elementRef: ElementRef){
-    this.bellSound = new Audio();
-    this.bellSound.src = 'assets/bell-sound-1.wav';
+  bellSound_pizzeria_src: string;
+  bellSound_cucina_src: string;
+
+  last_to_production_ISODate: string;
+
+  constructor(private django: DjangoService, private dataService: DataService, private cdr: ChangeDetectorRef){
+      this.bellSound_pizzeria_src = 'assets/bell-sound-1.wav';
+      this.bellSound_cucina_src = 'assets/bell-sound-2.wav';
+      this.last_to_production_ISODate = this.dataService.getCurrentISODate();
   }
   
   ngOnInit(): void {
-
+    //console.log(this.getCurrentISODate());
+    
     // Acquisico i prodotti
     this.dataService.productsData$.subscribe(data => {
       
@@ -81,7 +88,22 @@ export class CommandaComponent {
               // il i dati del tavolo e gl'altri campi nulli
               this.dataService.fullData$.subscribe(data => {
                 this.commanda = this.updateCommandaData(data,  this.selectedTable);
-                //console.log(this.commanda);
+                console.log(this.commanda);
+
+                this.commanda_prodotte = this.dataService.filterByLastToProductionDate(this.dataService.filterCommandsByStatus(this.commanda,'C'), this.last_to_production_ISODate);
+                if (this.commanda_prodotte.length > 0) {
+                  console.log(this.commanda_prodotte.length);
+                  console.log(this.commanda_prodotte);
+                  // Perform the action (e.g., make a sound)
+                  //this.dataService.playSound(this.bellSound_pizzeria_src);
+                  this.checkAndPlaySounds(this.commanda_prodotte);
+            
+                  // Update last_to_production_ISODate to the most recent commanda__to_production in the filtered array
+                  const mostRecentDate = new Date(Math.max(...this.commanda_prodotte.map((item: { commanda__to_production: string | number | Date; }) => new Date(item.commanda__to_production).getTime())));
+                  this.last_to_production_ISODate = mostRecentDate.toISOString();
+                  console.log(this.last_to_production_ISODate);
+                }
+
               });
 
             });
@@ -98,7 +120,6 @@ export class CommandaComponent {
     //  Filtro i dati per il tavolo selezionato 
     this.selected_commanda = data.filter((item: { id: number; }) => item.id === selectedTableID);
     
-    //console.log(this.selected_commanda.length);
     // Identifico il nome del tavolo
     // Controllo se tutti gli elementi hanno lo stesso nome del tavolo
     const sameNome = this.selected_commanda.every((item, index, array) => item.nome === array[0].nome);
@@ -270,7 +291,10 @@ export class CommandaComponent {
 
   change_production_status(data: any, status: any){
     
-    var body ={"production_status": status}
+    var body ={
+      "production_status": status,
+      "to_production": this.dataService.getCurrentISODate()
+    }
     this.django.doModify(this.dataService.urls.commande + data.commanda__id + "/", body).subscribe((data: any) =>{
   
       this.dataService.fetchCommandeOnce(); 
@@ -385,6 +409,39 @@ export class CommandaComponent {
   }
 
   setPage(data: string){this.dataService.setPage(data)}
+
+  
+  checkAndPlaySounds(data: any[]): void {
+    // Filter the data for collection IDs 1 and 2
+    const filteredData = data.filter(item =>
+      item.commanda__product__collection_id === 1 || item.commanda__product__collection_id === 2
+    );
+
+    // Sort the filtered data by commanda__to_production date
+    filteredData.sort((a, b) => new Date(a.commanda__to_production).getTime() - new Date(b.commanda__to_production).getTime());
+
+    // Flags to check if sounds have been played
+    let sound1Played = false;
+    let sound2Played = false;
+
+    // Play sounds based on collection IDs
+    for (let item of filteredData) {
+      if (item.commanda__product__collection_id === 1 && !sound1Played) {
+        this.dataService.playSound(this.bellSound_pizzeria_src);
+        sound1Played = true;
+      }
+      if (item.commanda__product__collection_id === 2 && !sound2Played) {
+        this.dataService.playSound(this.bellSound_cucina_src);
+        sound2Played = true;
+      }
+
+      // If both sounds have been played, break out of the loop
+      if (sound1Played && sound2Played) {
+        break;
+      }
+    }
+  }
+
 
 }
 

@@ -64,6 +64,7 @@ export class DataService {
   private cucinaVisibleSubject = new BehaviorSubject<boolean>(false);
   cucinaVisible$ = this.cucinaVisibleSubject.asObservable();
   
+  bellSound: HTMLAudioElement;
 
   constructor(private django: DjangoService) {
     
@@ -80,6 +81,8 @@ export class DataService {
     this.startFetchingCommande();
     this.fetchProducts();
     this.setPage('main');
+
+    this.bellSound = new Audio();
 
   }
 
@@ -164,34 +167,87 @@ export class DataService {
 
   }
 
-  filterCommandsByCollectionAndStatus(commandObjects: any[], products: any[], collection: number, productionStatus: string): any[] {
-    if (!commandObjects || !products) {
-      return [];
+  filterCommandsByCollectionAndStatus(commandObjects: any[], collection: number, productionStatus: string): any[] {
+    if (!commandObjects) {
+        return [];
     }
 
-    return commandObjects
-      .filter(command => {
-        // Find the corresponding product
-        const product = products.find(p => p.id === command.commanda__product_id);
-
-        // Check if the product exists and has the specified collection and production status
-        return product && 
-               product.collection === collection && 
+    // Filter the command objects based on the provided criteria
+    const filteredCommands = commandObjects.filter(command => {
+        // Check if the command has the specified collection and production status
+        return command.commanda__product__collection_id === collection &&
                command.commanda__production_status === productionStatus;
-      })
-      .map(command => {
-        // Find the corresponding product
-        const product = products.find(p => p.id === command.commanda__product_id);
-        return {
-          ...command,
-          product__title: product ? product.title : null
-        };
-      });
+    });
+
+    // Sort the filtered commands by commanda__to_production in ascending order
+    filteredCommands.sort((a, b) => {
+      // Assuming commanda__to_production is a date/time field
+      const dateA = new Date(a.commanda__to_production).getTime();
+      const dateB = new Date(b.commanda__to_production).getTime();
+      return dateA - dateB;
+    });
+
+    return filteredCommands;
   }
 
+  filterCommandsByStatus(commandObjects: any[], productionStatus: string): any[] {
+    if (!commandObjects) {
+        return [];
+    }
+
+    // Filter the command objects based on the provided criteria
+    const filteredCommands = commandObjects.filter(command => {
+        // Check if the command has the specified collection and production status
+        return command.commanda__production_status === productionStatus;
+    });
+
+    // Sort the filtered commands by commanda__to_production in ascending order
+    filteredCommands.sort((a, b) => {
+      // Assuming commanda__to_production is a date/time field
+      const dateA = new Date(a.commanda__to_production).getTime();
+      const dateB = new Date(b.commanda__to_production).getTime();
+      return dateA - dateB;
+    });
+
+    return filteredCommands;
+  }
+
+  filterByLastToProductionDate(data: any[], last_to_production_ISODate: string): any[] {
+    if (!data) {
+        return [];
+    }
+
+    // Convert last_to_production_ISODate string to Date object
+    const lastToProductionDate = new Date(last_to_production_ISODate);
+
+    // Filter elements where commanda__to_production date is greater than lastToProductionDate
+    const filteredData = data.filter(item => {
+        const itemToProductionDate = new Date(item.commanda__to_production);
+        return itemToProductionDate > lastToProductionDate;
+    });
+
+    return filteredData;
+  }
+
+  getCurrentISODate(): string {
+    const now = new Date();
+    return now.toISOString();
+  }
   
+  playSound(src: any){
+    const audio = new Audio(src);
+    audio.play();
+    //console.log(src);
+  }
 
-
-
+  change_production_status(data: any, status: any){
+    var body ={
+      "production_status": status,
+      "to_production": this.getCurrentISODate()
+    }
+    this.django.doModify(this.urls.commande + data.commanda__id + "/", body).subscribe((data: any) =>{
+      this.fetchCommandeOnce(); 
+    });
+  }
 
 }
