@@ -24,9 +24,11 @@ export class TavoloComponent {
   constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService){
     this.bellSound = new Audio();
     this.bellSound.src = 'assets/bell-sound-1.wav';
+    
   }
   
   ngOnInit(): void {
+
     
     // Aquisico full data
     this.dataService.fullData$.subscribe(data => {

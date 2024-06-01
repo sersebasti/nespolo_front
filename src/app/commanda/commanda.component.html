@@ -1,7 +1,6 @@
 <div class="commanda_body">
     <p class="legend_commanda">Commanda | {{ nomeTavolo }}</p> 
     
-   
     <div class="up-container">
       <!--div>
       STATUS_A = 'A'
@@ -32,9 +31,9 @@
             
             <img *ngIf="element.commanda__production_status == 'A'" matChipRemove src="../../assets/images/icons8-delete-30.png" alt="delete" (click)="remove(element)"/>
             <!-- Se è un prodotto che posso mandare in produzione ci aggiungo una freccia -->
-            <img *ngIf="element.commanda__production_status == 'A' && element.product_collection_id != 3" matChipRemove src="../../assets/images/send_icon.png" alt="freccia" (click)="change_production_status(element,'B')"/>
+            <img *ngIf="element.commanda__production_status == 'A' && element.commanda__product__collection_id != 3" matChipRemove src="../../assets/images/send_icon.png" alt="freccia" (click)="change_production_status(element,'B')"/>
             
-            <img *ngIf="element.product_collection_id == 3 || element.commanda__production_status == 'C'" matChipRemove src="../../assets/images/check.png" alt="complete" (click)="change_production_status(element,'D')"/>
+            <img *ngIf="element.commanda__product__collection_id == 3 || element.commanda__production_status == 'C'" matChipRemove src="../../assets/images/check.png" alt="complete" (click)="change_production_status(element,'D')"/>
 
             <img *ngIf="element.commanda__production_status == 'B'" matChipRemove src="../../assets/images/gear.png" alt="ingranaggio"/>
 
@@ -50,20 +49,22 @@
         <hr>
         <!-- Other HTML code -->
         <p>Quantità:</p>
-        <p><input type="number" placeholder="Enter a number" [(ngModel)]="quantity"/></p>
+        <p><input type="number" placeholder="Enter a number" [(ngModel)]="selected_commanda_element.commanda__quantity"/></p>
         <div class="radio-container">
-            <mat-radio-group>
-                <mat-radio-button *ngFor="let value of [1, 2, 3, 4, 5, 6, 7, 8, 9]" [value]="value" (change)="onRadioSelected(value)">{{value}}</mat-radio-button>
+            <mat-radio-group [(ngModel)]="selected_commanda_element.commanda__quantity">
+              <mat-radio-button *ngFor="let value of [1, 2, 3, 4, 5, 6, 7, 8, 9]" [value]="value">
+                {{value}}
+              </mat-radio-button>
             </mat-radio-group>
         </div>
         <hr>
         <p>Nota:</p>
-        <textarea rows="3" maxlength="3000" placeholder="" class="custom-textarea" [(ngModel)]="textareaContent" (keydown.enter)="onEnterPressed($event)"></textarea>
+        <textarea rows="3" maxlength="3000" placeholder="" class="custom-textarea" [(ngModel)]="selected_commanda_element.commanda__note" (keydown.enter)="onEnterPressed($event)"></textarea>
         <!-- Other HTML code -->
         <div class="centered-row">
             <button mat-button class="salva" (click)="aggiornaElementoCommanda()">Salva</button>
         </div>
-        <button class="close-button" (click)="closeModificaElementoCommanda()">x</button>
+        <button class="close-button" (click)="closeModificaElementoCommanda()">X</button>
       </fieldset>
 
 
@@ -119,17 +120,14 @@
       
       <div class="bottom-flex-container-1" id="prodotto_filtrati">
         <mat-chip-listbox *ngIf="cercaVisible" aria-label="product selection">
-          <mat-chip  *ngFor='let products of filtered_products' (click)="onSelectedProductChip(products)">
+          <mat-chip  *ngFor='let products of filtered_products' (click)="onSelectedProductToAdd(products)">
             <button mat-button>{{ products.title }}</button>
           </mat-chip>
         </mat-chip-listbox>
-        <!--p> test position</p-->
       </div>
 
-
-
       <div  *ngIf="!contoVisible" class="bottom-flex-container-2" id="cerca_prodotto">
-        <input id="searchInputField" class="legend_add_prodotto centered-element" matInput placeholder="Cerca prodotto"  style="border-radius: 30px" (input)="cercaProdotto($event)" (keydown.enter)=" onSelectedProductEnter($event)"> 
+        <input id="searchInputField" class="legend_add_prodotto centered-element" matInput placeholder="Cerca prodotto"  style="border-radius: 30px" (input)="cercaProdotto($event)" (keydown.enter)="onSelectedProductEnter($event)"> 
       </div>
   
       <div  class="bottom-flex-container-3">

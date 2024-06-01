@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, Subscription, interval, switchMap } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, interval, switchMap, tap } from 'rxjs';
 import { DjangoService } from '../servizi/django.service';
 import { GenericService } from '../servizi/generic.service';
 
@@ -94,12 +94,17 @@ export class DataService {
 
   }
 
+
   public fetchCommandeOnce(): any {
-      this.django.getData(this.urls.full).subscribe((data: any) => {
-        console.log("fetchCommandeOnce");
-        console.log(data);
-        this.fullDataSubject.next(data); // Updating the subject with the fetched data
+    this.django.getData(this.urls.full).subscribe((data: any) => {
+      console.log("fetchCommandeOnce");
+      console.log(data);
+      this.fullDataSubject.next(data); // Updating the subject with the fetched data
     });
+  }
+
+  public fetchCommandeRetrunData(): Observable<any> {
+    return this.django.getData(this.urls.full);
   }
 
 

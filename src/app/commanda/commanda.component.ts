@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ChangeDetectorRef, Renderer2, ElementRef } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectorRef, Renderer2, ElementRef, ComponentFactoryResolver } from '@angular/core';
 import { DjangoService } from '../servizi/django.service';
 import { DataService, Product, Commanda } from '../servizi/data.service';
 import { GenericService } from '../servizi/generic.service';
@@ -22,11 +22,10 @@ export class CommandaComponent {
   fullData: any;
 
   selected_commanda!: Commanda[];
-  
+  selected_commanda_element!: Commanda;
+
   commanda: any;
   elementiConto: any;
-  selected_commanda_element: number | undefined;
-
   
   nomeTavolo: string = '';
 
@@ -83,7 +82,6 @@ export class CommandaComponent {
   
   ngOnInit(): void {
 
-
     // Acquisico i prodotti
     this.dataService.productsData$.subscribe(data => {
       
@@ -128,7 +126,6 @@ export class CommandaComponent {
   }
 
   // Update data 
-
   updateCommandaData(data: any[], selectedTableID: number){
     let commanda: any;
 
@@ -196,10 +193,47 @@ export class CommandaComponent {
     }
 
   }
+  
+  onSelectedProductToAdd(sel_product: any){
 
-  onSelectedProductChip(sel_product: any){
-    console.log("ok selezionato prodotto: " + sel_product.title)
-    this.add_product_pending(sel_product, "1")
+    let body =   {
+      "tavolo": this.selectedTable,
+      "product": sel_product.id,
+      "quantity": 1
+    }
+
+    this.django.doCreate(this.dataService.urls.commande, body).subscribe((response: any) => {
+      console.log(JSON.stringify(response));
+      
+      // Cancello testo prodotto cercato
+      const myInputField = document.getElementById('searchInputField') as HTMLInputElement;
+      myInputField.value = "";
+      
+      // Nascondo prodotti crecati
+      this.cercaVisible = false
+      
+      // Aggiorno commanda - se hasSpecialTitle apro subito l'interfaccia per editare la nota
+      if(this.hasSpecialTitle(response.product_title)){
+        console.log("tipo altro")
+        this.dataService.fetchCommandeRetrunData().subscribe((data: any) => {
+          this.commanda = data;
+          console.log(this.commanda);
+          console.log(this.getSelectedCommandaByID(response.id));
+          this.modificaElementoCommanda(this.getSelectedCommandaByID(response.id));
+        });
+      }
+      else{this.dataService.fetchCommandeOnce();}
+    });
+
+  }
+
+  hasSpecialTitle(str: string){
+    if (str === "altro Bar" || str === "altro Cucina" || str === "altro Pizzeria") {return true;}
+    else{return false;}
+  }
+  
+  getSelectedCommandaByID(id: number){
+    return this.commanda.filter((item: { commanda__id: any; }) => item.commanda__id === id)[0];
   }
 
   add_product_pending(product_to_add: any, last_str: string){
@@ -222,41 +256,43 @@ export class CommandaComponent {
     this.django.doCreate(this.dataService.urls.commande, body).subscribe((response: any) => {
           console.log(JSON.stringify(response));
           
-          // Aggiorno i dati della commanda sul servizio che poi sono aggiornati in questo componente
-          this.dataService.fetchCommandeOnce();
+
+
+          this.dataService.fetchCommandeOnce().then((response: { id: any; }) => {
+            // Once fetchCommandeOnce() completes, filter the data
+            const filteredData = this.commanda.filter((item: { commanda__id: any; }) => item.commanda__id === response.id);
+            console.log(filteredData);
+
+            // Nel caso uno sceglie altro subito apre finestra per descrizione
+            if (filteredData[0].commanda__product__title == "altro Bar" || filteredData[0].commanda__product__title == "altro Cucina" || filteredData[0].commanda__product__title == "altro Pizzeria"){
+              this.modificaElementoCommanda(filteredData[0].commanda__production_id);
+            }
+
+          }).catch((error: any) => {
+            console.error('Error fetching data:', error);
+          });
           
           // Cancello testo prodotto cercato e nascondo prodotto crecati
           const myInputField = document.getElementById('searchInputField') as HTMLInputElement;
           myInputField.value = "";
           this.cercaVisible = false
                
-          // Nel caso uno sceglie altro subito apre finestra per descrizione
-          if (response.product_title == "altro Bar" || response.product_title == "altro Cucina" || response.product_title == "altro Pizzeria"){
-            this.modificaElementoCommanda(response);
-          }
+
 
     });
   }
 
   modificaElementoCommanda(element_to_mod: any){
-    console.log("Elemnto selezionato da modificare: ")
+    console.log('Elemento commanda selezionato:');
     console.log(element_to_mod);
-    
-    // Serve per identifiacare quale è l'elemento da modificare 
-    this.selected_commanda_element = element_to_mod.commanda__id;
-
-    this.textareaContent = element_to_mod.commanda__note;
-    this.selectedRadioValue = element_to_mod.commanda__quantity;
-
-    if(element_to_mod.commanda__production_status == 'A'){
-      this.ordiniVisible = false
+    this.selected_commanda_element = element_to_mod;
+    if(this.selected_commanda_element.commanda__production_status == 'A'){
+      console.log("mosta per editare elemento commnda");
+      this.ordiniVisible = false;
     } 
-
   }
 
-  closeModificaElementoCommanda(){
-    this.ordiniVisible = true
-  }
+  closeModificaElementoCommanda(){this.ordiniVisible = true}
 
   remove(element: any){
     console.log(this.dataService.urls.commande + element.commanda__id + "/")
@@ -267,28 +303,21 @@ export class CommandaComponent {
   }
 
 
-    // Method to handle radio button selection
-  onRadioSelected(value: number) {
-      this.selectedRadioValue = value;
-      this.quantity = value; 
-  }
-
   // Method to handle Enter key press in the textarea
   onEnterPressed(event: Event) {
     const keyboardEvent = event as KeyboardEvent;
-    if (keyboardEvent.key === 'Enter') { // Check if the pressed key is Enter
-      this.aggiornaElementoCommanda(); // Trigger the method to update variables
-    }
+    if (keyboardEvent.key === 'Enter') {this.aggiornaElementoCommanda(); }
   }
   
   aggiornaElementoCommanda(){
+    
     var body =
     {
-      "quantity": this.quantity,
-      "note": this.textareaContent
+      "quantity": this.selected_commanda_element.commanda__quantity,
+      "note": this.selected_commanda_element.commanda__note
     }
 
-    this.django.doModify(this.dataService.urls.commande + this.selected_commanda_element + "/", body).subscribe((data: any) =>{
+    this.django.doModify(this.dataService.urls.commande + this.selected_commanda_element.commanda__id + "/", body).subscribe((data: any) =>{
       this.dataService.fetchCommandeOnce();
       this.ordiniVisible = true
     });
@@ -316,7 +345,7 @@ export class CommandaComponent {
 
   conto(str: any){
     
-    console.log(str);
+    //console.log(str);
     if(str == 'toggle'){this.contoVisible = !this.contoVisible}
 
     const productAggregation: { [key: number]: ProductAggregation } = {};
@@ -328,8 +357,8 @@ export class CommandaComponent {
       commanda__note: null
     }];
 
-    console.log(this.prezzo_coperto);
-    console.log(this.commanda.coperti);
+    //console.log(this.prezzo_coperto);
+    //console.log(this.commanda.coperti);
 
     let hasSpecialTitle = false;
 
@@ -342,9 +371,7 @@ export class CommandaComponent {
         const productPrice = parseFloat(elem.commanda__product__price);
         const productQuantity = elem.commanda__quantity;
 
-        if (productTitle === "altro Bar" || productTitle === "altro Cucina" || productTitle === "altro Pizzeria") {
-          hasSpecialTitle = true;
-        }
+        hasSpecialTitle = this.hasSpecialTitle(productTitle);
 
         // If there's a note, treat it as a separate entry
         if (elem.commanda__note !== null) {
@@ -404,8 +431,8 @@ export class CommandaComponent {
 
     this.elementiConto = aggregatedDataArray;
 
-    console.log(this.elementiConto);
-    console.log(this.overallTotalPriceString);
+    //console.log(this.elementiConto);
+    //console.log(this.overallTotalPriceString);
 
   }
 
@@ -415,53 +442,10 @@ export class CommandaComponent {
     }
   }
 
-
   setPage(data: string){this.dataService.setPage(data)}
 
-
-  /*
-  ngOnDestroy(): void {
-    console.log("ngOnTavoloDestroy");
-    clearInterval(this.intervalIdOrdinazioni);
-  }
-  */
-   /*
-  ngAfterViewInit(): void {
-    // This code will run after the component's view has been initialized
-    this.isViewInitialized = true;
-    this.onLoad();
-  }
-
-  onLoad(): void {
-    if (this.isViewInitialized) {
-      
-      const element = document.getElementById('prodotto_filtrati');
-
-      if (element) {
-        const height = element.offsetHeight;
-        console.log('Element height:', height);
-      } else {
-        console.error('Element not found');
-      }
-
-
-    }
-  }
-  /**/
-
-
 }
 
-
-
-/*
-export interface Conto{
-  product_price: any;
-  product__title: string;
-  total_quantity: number;
-  total_price: string;
-}
-/**/ 
 
 export interface GroupedOrders {
   [tavoloId: number]: { tavoloId: number; tavolo_nome: string, status_AC_Count: number, status_C_Count: number};
@@ -473,50 +457,3 @@ export interface ProductAggregation {
   totalPrice: string;
   commanda__note: string | null;
 }
-
-
-
-    // Tavoli solo per il suono 
-    /*
-    this.django.getData(this.dataService.urls.tavoli_status).subscribe((data_tavoli: any) =>{
-      this.tavoli = data_tavoli;
-      console.log(data_tavoli)
-    });
-    /** /
-
-    this.intervalIdOrdinazioni = setInterval(()=>{
-
-      this.django.getData(this.url_tavolo_no_status).subscribe((data: any) =>{
-        
-        //console.log(data);
-        if(!this.genericService.arraysAreEqual(data, this.commanda)){
-          console.log(this.commanda);
-          this.commanda = data;
-          console.log("aggiornato commanda");
-        }
-        
-      });
-
-      // solo per il suono 
-      this.django.getData(this.dataService.urls.tavoli_status).subscribe((data_tavoli: any) =>{
-        
-        console.log(data_tavoli)
-        
-        if(this.checkSuondCondition(this.tavoli,data_tavoli)){
-          this.bellSound.play();
-          console.log("suona");
-        }
-
-        if(!this.genericService.arraysAreEqual(data_tavoli,this.tavoli)){
-          this.tavoli = data_tavoli;
-          console.log(this.tavoli);
-        }
-        
-        
-      });
-
-
-
-
-    }, this.freq);
-    */
