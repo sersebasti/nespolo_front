@@ -189,7 +189,7 @@ export class CommandaComponent {
     if(this.selected_product.length == 1){
        console.log("ok un solo prodotto rimasto: " + this.selected_product[0].title)
        console.log("ultima stinga di ricerca è: " + this.cercaProdotto(event)[1])
-       this.add_product_pending(this.selected_product[0], this.cercaProdotto(event)[1])
+       this.onSelectedProductToAdd(this.selected_product[0])
     }
 
   }
@@ -236,52 +236,6 @@ export class CommandaComponent {
     return this.commanda.filter((item: { commanda__id: any; }) => item.commanda__id === id)[0];
   }
 
-  add_product_pending(product_to_add: any, last_str: string){
-    
-    let quantity = 1
-    // se per ultimo ho digitato un numero inserico quel numoro di prodotti
-    let parsedValue = parseInt(last_str, 10);
-    if(!isNaN(parsedValue) && Number.isInteger(parsedValue) && parsedValue > 0){
-       quantity = parsedValue
-    }
-
-    let body =   {
-      "tavolo": this.selectedTable,
-      "product": product_to_add.id,
-      "quantity": quantity
-    }
-
-    console.log(body);
-    // Insert new product commanda
-    this.django.doCreate(this.dataService.urls.commande, body).subscribe((response: any) => {
-          console.log(JSON.stringify(response));
-          
-
-
-          this.dataService.fetchCommandeOnce().then((response: { id: any; }) => {
-            // Once fetchCommandeOnce() completes, filter the data
-            const filteredData = this.commanda.filter((item: { commanda__id: any; }) => item.commanda__id === response.id);
-            console.log(filteredData);
-
-            // Nel caso uno sceglie altro subito apre finestra per descrizione
-            if (filteredData[0].commanda__product__title == "altro Bar" || filteredData[0].commanda__product__title == "altro Cucina" || filteredData[0].commanda__product__title == "altro Pizzeria"){
-              this.modificaElementoCommanda(filteredData[0].commanda__production_id);
-            }
-
-          }).catch((error: any) => {
-            console.error('Error fetching data:', error);
-          });
-          
-          // Cancello testo prodotto cercato e nascondo prodotto crecati
-          const myInputField = document.getElementById('searchInputField') as HTMLInputElement;
-          myInputField.value = "";
-          this.cercaVisible = false
-               
-
-
-    });
-  }
-
   modificaElementoCommanda(element_to_mod: any){
     console.log('Elemento commanda selezionato:');
     console.log(element_to_mod);
@@ -292,7 +246,15 @@ export class CommandaComponent {
     } 
   }
 
-  closeModificaElementoCommanda(){this.ordiniVisible = true}
+  closeModificaElementoCommanda(){
+    // Se l'elento è di tipo alto occorre che il campo note non sia vuoto - altrimenti non si capisce cosa è
+    if(this.check_TipoAltro_NotaLen(this.selected_commanda_element)){
+      window.alert("Inserire info nel campo nota");
+    }
+    else{
+      this.ordiniVisible = true;
+    }
+  }
 
   remove(element: any){
     console.log(this.dataService.urls.commande + element.commanda__id + "/")
@@ -302,8 +264,6 @@ export class CommandaComponent {
     });
   }
 
-
-  // Method to handle Enter key press in the textarea
   onEnterPressed(event: Event) {
     const keyboardEvent = event as KeyboardEvent;
     if (keyboardEvent.key === 'Enter') {this.aggiornaElementoCommanda(); }
@@ -311,17 +271,33 @@ export class CommandaComponent {
   
   aggiornaElementoCommanda(){
     
-    var body =
-    {
-      "quantity": this.selected_commanda_element.commanda__quantity,
-      "note": this.selected_commanda_element.commanda__note
+    // Se l'elento è di tipo alto occorre che il campo note non sia vuoto - altrimenti non si capisce cosa è
+    if(this.check_TipoAltro_NotaLen(this.selected_commanda_element)){
+      window.alert("Inserire info nel campo nota");
     }
+    else{
+      var body =
+      {
+        "quantity": this.selected_commanda_element.commanda__quantity,
+        "note": this.selected_commanda_element.commanda__note
+      }
+  
+      this.django.doModify(this.dataService.urls.commande + this.selected_commanda_element.commanda__id + "/", body).subscribe((data: any) =>{
+        this.dataService.fetchCommandeOnce();
+        this.ordiniVisible = true
+      });
+    }
+  
+  }
 
-    this.django.doModify(this.dataService.urls.commande + this.selected_commanda_element.commanda__id + "/", body).subscribe((data: any) =>{
-      this.dataService.fetchCommandeOnce();
-      this.ordiniVisible = true
-    });
-
+  check_TipoAltro_NotaLen(element: any){
+    if(element.commanda__note.length == 0 
+      && this.hasSpecialTitle(this.getSelectedCommandaByID(element.commanda__id).commanda__product__title)){
+      return true;
+    }
+    else{
+      return false;
+    }
   }
 
   change_production_status(data: any, status: any){
