@@ -2,6 +2,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { DjangoService } from '../servizi/django.service';
 import { DataService } from '../servizi/data.service';
 import { GenericService } from '../servizi/generic.service';
+import { Subscription } from 'rxjs';
+
 
 
 @Component({
@@ -24,6 +26,8 @@ export class PizzeriaComponent {
   last_to_production_ISODate: string;
   bellSound_src: string;
 
+  subscription: Subscription | undefined;
+
 
   constructor(private django: DjangoService, private dataService: DataService){
     this.url_main  = dataService.url_main
@@ -42,12 +46,10 @@ export class PizzeriaComponent {
     2 -> Cucina
     3 -> Bar
     */
-    this.dataService.productsData$.subscribe(data => { 
-      // data potrebbe essere null se non è stata completata prima della risposta del server
-      if(data !== null){
-           
+    
           // Acquisisco commande e filto per collection e status 
-          this.dataService.fullData$.subscribe(data => {
+          this.subscription = this.dataService.fullData$.subscribe(data => {
+            console.log('pizzeria');
             //console.log(data);
             this.collection_pizze = this.dataService.filterCommandsByCollectionAndStatus(data, 1, 'B');
             console.log(this.collection_pizze);
@@ -68,9 +70,7 @@ export class PizzeriaComponent {
             }
 
           });
-      }
-      else{console.log("Errore. Non sono riuscito ad acquisire i prodotti");}
-    });
+
 
   }
 
@@ -89,5 +89,8 @@ export class PizzeriaComponent {
     this.dataService.change_production_status(element, status);
   }
 
-  setPage(data: string){this.dataService.setPage(data)}
+  setPage(data: string){
+    if(data == "main" && this.subscription){this.subscription.unsubscribe();}
+    this.dataService.setPage(data)
+  }
 }

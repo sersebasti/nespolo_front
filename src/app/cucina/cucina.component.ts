@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { DjangoService } from '../servizi/django.service';
 import { DataService } from '../servizi/data.service';
 import { GenericService } from '../servizi/generic.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-cucina',
@@ -22,6 +23,8 @@ export class CucinaComponent {
   last_to_production_ISODate: string;
   bellSound_src: string;
 
+  subscription: Subscription | undefined;
+
   constructor(private django: DjangoService, private dataService: DataService){
     
     this.url_main  = dataService.url_main;
@@ -39,14 +42,10 @@ export class CucinaComponent {
     2 -> Cucina
     3 -> Bar
     */
-    this.dataService.productsData$.subscribe(data => {
-      
-      // data potrebbe essere null se non è stata completata prima della risposta del server
-      if(data !== null){
- 
           // ACquisisco commande e filto per collection_id 
-          this.dataService.fullData$.subscribe(data => {
-           
+          this.subscription = this.dataService.fullData$.subscribe(data => {
+            console.log('cucina');
+
             this.collection_cucina = this.dataService.filterCommandsByCollectionAndStatus(data, 2, 'B');
 
             this.collection_new_things = this.dataService.filterByLastToProductionDate(this.collection_cucina, this.last_to_production_ISODate);
@@ -65,12 +64,6 @@ export class CucinaComponent {
             }
             
           });
-
-      }
-      else{console.log("Errore. Non sono riuscito ad acquisire i prodotti");}
-  
-    });
-
   }
 
   remove(element: any){
@@ -87,5 +80,8 @@ export class CucinaComponent {
     this.dataService.change_production_status(element, status);
   }
 
-  setPage(data: string){this.dataService.setPage(data)}
+  setPage(data: string){
+    if(data == "main" && this.subscription){this.subscription.unsubscribe();}
+    this.dataService.setPage(data)
+  }
 }
