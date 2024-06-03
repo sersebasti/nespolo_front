@@ -7,6 +7,9 @@ import { DataService } from './servizi/data.service';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
+  title(title: any) {
+    throw new Error('Method not implemented.');
+  }
   
   version: string | undefined
   

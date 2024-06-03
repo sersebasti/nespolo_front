@@ -21,7 +21,7 @@ export class CucinaComponent {
   url_commande: string | undefined
   
   last_to_production_ISODate: string;
-  bellSound_src: string;
+  //bellSound_src: string;
 
   subscription: Subscription | undefined;
 
@@ -29,7 +29,7 @@ export class CucinaComponent {
     
     this.url_main  = dataService.url_main;
 
-    this.bellSound_src = 'assets/bell-sound-2.wav';
+    //this.bellSound_src = 'assets/bell-sound-2.wav';
     this.last_to_production_ISODate = this.dataService.getCurrentISODate();
   
   }
@@ -46,24 +46,10 @@ export class CucinaComponent {
           this.dataService.setUsedComponentSubject('cucina');
 
           this.subscription = this.dataService.fullData$.subscribe(data => {
-            console.log('cucina');
+           
 
             this.collection_cucina = this.dataService.filterCommandsByCollectionAndStatus(data, 2, 'B');
 
-            this.collection_new_things = this.dataService.filterByLastToProductionDate(this.collection_cucina, this.last_to_production_ISODate);
-            
-            console.log(this.last_to_production_ISODate);
-            if (this.collection_new_things.length > 0) {
-              console.log(this.collection_new_things.length);
-              
-              // Perform the action (e.g., make a sound)
-              this.dataService.playSound(this.bellSound_src);
-        
-              // Update last_to_production_ISODate to the most recent commanda__to_production in the filtered array
-              const mostRecentDate = new Date(Math.max(...this.collection_new_things.map((item: { commanda__to_production: string | number | Date; }) => new Date(item.commanda__to_production).getTime())));
-              this.last_to_production_ISODate = mostRecentDate.toISOString();
-              console.log(this.last_to_production_ISODate);
-            }
             
           });
   }
