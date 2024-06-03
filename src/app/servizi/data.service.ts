@@ -36,7 +36,7 @@ export class DataService {
 
   urls: { main: string; products: string; commande: string; tavoli: string; tavoli_status: string; ordinazione: string; full: string;}
 
-  version: string = '1.4.1';
+  version: string = '1.4.2';
   version_back: string = '2.5.14';
 
   private readonly freq = 1500;
@@ -124,9 +124,13 @@ export class DataService {
         
         switch(this.getUsedComponentSubject()) {
 
-          case 'tavoli' || 'commanda':
+          case 'tavoli':
             this.TavoliCommandaBell(data);
             break;
+
+          case 'commanda':
+            this.TavoliCommandaBell(data);
+            break;  
           case 'pizzeria':
             this.PizzeriaBell(data);
             break;
@@ -200,8 +204,11 @@ export class DataService {
 
 
   public TavoliCommandaBell(data: any){
+
     this.commanda_prodotte = this.filterByLastToProductionDate(this.filterCommandsByStatus(data,'C'), this.last_to_production_ISODate_sala);
+
     if (this.commanda_prodotte.length > 0) {
+
       console.log(this.commanda_prodotte.length);
       console.log(this.commanda_prodotte);
       // Perform the action (e.g., make a sound)

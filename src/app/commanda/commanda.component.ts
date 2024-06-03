@@ -54,7 +54,7 @@ export class CommandaComponent {
   
   ngOnInit(): void {
 
-
+                                              
     this.dataService.setUsedComponentSubject('commanda');
     //console.log(this.getCurrentISODate());
     

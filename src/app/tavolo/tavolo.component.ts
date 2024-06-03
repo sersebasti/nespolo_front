@@ -77,7 +77,7 @@ export class TavoloComponent {
         // Convert the grouped orders object to an array and assign it to this.tavoli
         this.tavoli = Object.values(groupedOrders);
         console.log(this.tavoli);
-        console.log(this.dataService.getCurrentISODate())
+        //console.log(this.dataService.getCurrentISODate())
 
       }
     });
