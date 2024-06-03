@@ -43,6 +43,8 @@ export class CucinaComponent {
     3 -> Bar
     */
           // ACquisisco commande e filto per collection_id 
+          this.dataService.setUsedComponentSubject('cucina');
+
           this.subscription = this.dataService.fullData$.subscribe(data => {
             console.log('cucina');
 
@@ -64,6 +66,11 @@ export class CucinaComponent {
             }
             
           });
+  }
+
+  ngOnDestroy(): void {
+    if(this.subscription){this.subscription.unsubscribe();}
+    this.dataService.setUsedComponentSubject('');
   }
 
   remove(element: any){

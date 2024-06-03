@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, Subscription, interval, switchMap, tap } from 'rxjs';
 import { DjangoService } from '../servizi/django.service';
-import { GenericService } from '../servizi/generic.service';
+import { BehaviorSubject, interval, Subject,Observable } from 'rxjs';
+import { switchMap, takeUntil } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+
 
 export interface Product {
   id: number;
@@ -37,7 +39,7 @@ export class DataService {
   version: string = '1.3.1';
   version_back: string = '2.5.14';
 
-  freq: number = 2000;
+  private readonly freq = 2000;
   selectedTable: number = 0;
   numeroCoperti: number = 0;
 
@@ -45,7 +47,9 @@ export class DataService {
 
   // commande
   private fullDataSubject = new BehaviorSubject<any>(null);
-  public fullData$ = this.fullDataSubject.asObservable();
+  private destroy$ = new Subject<void>();
+
+
 
   
   // prodotti
@@ -64,7 +68,15 @@ export class DataService {
   private cucinaVisibleSubject = new BehaviorSubject<boolean>(false);
   cucinaVisible$ = this.cucinaVisibleSubject.asObservable();
   
-  bellSound: HTMLAudioElement;
+  commanda_prodotte: any;
+  last_to_production_ISODate_commande: string;
+
+  bellSound_pizzeria_src: string;
+  bellSound_cucina_src: string;
+
+
+  private UsedComponentSubject = new BehaviorSubject<string>('');
+
 
   constructor(private django: DjangoService) {
     
@@ -82,21 +94,67 @@ export class DataService {
     this.fetchProducts();
     this.setPage('main');
 
-    this.bellSound = new Audio();
+    this.bellSound_pizzeria_src = 'assets/bell-sound-1.wav';
+    this.bellSound_cucina_src = 'assets/bell-sound-2.wav';
+
+    this.last_to_production_ISODate_commande = this.getCurrentISODate();
+
+    
 
   }
+
 
   private startFetchingCommande(): void {
 
-    interval(this.freq).subscribe(() => {
-      this.django.getData(this.urls.full).subscribe((data: any) => {
-        //console.log(data)
+    interval(this.freq)
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap(() => this.django.getData(this.urls.full))
+      )
+      .subscribe((data: any) => {
         this.fullDataSubject.next(data);
+        console.log("Active Component: " + this.getUsedComponentSubject())
+        // this.CommandaBell(data);
       });
-    });
 
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  get fullData$() {
+    return this.fullDataSubject.asObservable();
+  }
+  
+  get UsedComponentSubject$() {
+    return this.UsedComponentSubject.asObservable();
+  }
+
+  setUsedComponentSubject(value: string): void {
+    this.UsedComponentSubject.next(value);
+  }
+
+  getUsedComponentSubject(): string {
+    return this.UsedComponentSubject.getValue();
+  }
+
+  public CommandaBell(data: any){
+    this.commanda_prodotte = this.filterByLastToProductionDate(this.filterCommandsByStatus(data,'C'), this.last_to_production_ISODate_commande);
+    if (this.commanda_prodotte.length > 0) {
+      console.log(this.commanda_prodotte.length);
+      console.log(this.commanda_prodotte);
+      // Perform the action (e.g., make a sound)
+      //this.dataService.playSound(this.bellSound_pizzeria_src);
+      if(1){this.checkAndPlaySoundsTavoli(this.commanda_prodotte);}
+      
+      // Update last_to_production_ISODate to the most recent commanda__to_production in the filtered array
+      const mostRecentDate = new Date(Math.max(...this.commanda_prodotte.map((item: { commanda__to_production: string | number | Date; }) => new Date(item.commanda__to_production).getTime())));
+      this.last_to_production_ISODate_commande = mostRecentDate.toISOString();
+      console.log(this.last_to_production_ISODate_commande);
+    }
+  }
 
   public fetchCommandeOnce(): any {
     this.django.getData(this.urls.full).subscribe((data: any) => {
@@ -151,13 +209,7 @@ export class DataService {
 
   }
 
-  setSelectedTable(table_id: number){
-    
-    this.selectedTable = table_id;
-
-
-
-  }
+  setSelectedTable(table_id: number){this.selectedTable = table_id;}
 
   getSelectedTable(callback: (selectedTable: any, numeroCoperti: any) => void) {
     this.django.getData(this.urls['tavoli'] + this.selectedTable + '/').subscribe((data: any) => {
@@ -248,6 +300,39 @@ export class DataService {
     this.django.doModify(this.urls.commande + data.commanda__id + "/", body).subscribe((data: any) =>{
       this.fetchCommandeOnce(); 
     });
+  }
+
+  checkAndPlaySoundsTavoli(data: any[]): void {
+    // Filter the data for collection IDs 1 and 2
+    const filteredData = data.filter(item =>
+      item.commanda__product__collection_id === 1 || item.commanda__product__collection_id === 2
+    );
+
+    // Sort the filtered data by commanda__to_production date
+    filteredData.sort((a, b) => new Date(a.commanda__to_production).getTime() - new Date(b.commanda__to_production).getTime());
+
+    // Flags to check if sounds have been played
+    let sound1Played = false;
+    let sound2Played = false;
+
+    // Play sounds based on collection IDs
+    for (let item of filteredData) {
+      if (item.commanda__product__collection_id === 1 && !sound1Played) {
+        this.playSound(this.bellSound_pizzeria_src);
+        sound1Played = true;
+      }
+      if (item.commanda__product__collection_id === 2 && !sound2Played) {
+        this.playSound(this.bellSound_cucina_src);
+        sound2Played = true;
+      }
+
+      // If both sounds have been played, break out of the loop
+      if (sound1Played && sound2Played) {
+        break;
+      }
+    }
+
+    
   }
 
 }

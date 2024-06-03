@@ -46,7 +46,7 @@ export class PizzeriaComponent {
     2 -> Cucina
     3 -> Bar
     */
-    
+          this.dataService.setUsedComponentSubject('pizzeria');
           // Acquisisco commande e filto per collection e status 
           this.subscription = this.dataService.fullData$.subscribe(data => {
             console.log('pizzeria');
@@ -72,6 +72,11 @@ export class PizzeriaComponent {
           });
 
 
+  }
+
+  ngOnDestroy(): void {
+    if(this.subscription){this.subscription.unsubscribe();}
+    this.dataService.setUsedComponentSubject('');
   }
 
   remove(element: any){

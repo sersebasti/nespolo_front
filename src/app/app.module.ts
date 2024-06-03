@@ -72,7 +72,7 @@ import { DataService } from './servizi/data.service';
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule { 
-
+export class AppModule {
   
+
 }

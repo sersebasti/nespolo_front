@@ -3,6 +3,7 @@ import { DjangoService } from '../servizi/django.service';
 import { DataService, Product, Commanda } from '../servizi/data.service';
 import { GenericService } from '../servizi/generic.service';
 import { AnimateTimings } from '@angular/animations';
+import { Subscription } from 'rxjs';
 
 
 //import { Product } from './product.interface.ts'; 
@@ -47,9 +48,14 @@ export class CommandaComponent {
   products: any;
   overallTotalPriceString: string | undefined;
 
+  subscription: Subscription | undefined;
+
   constructor(private django: DjangoService, private dataService: DataService, private cdr: ChangeDetectorRef){}
   
   ngOnInit(): void {
+
+
+    this.dataService.setUsedComponentSubject('commanda');
     //console.log(this.getCurrentISODate());
     
     // Acquisico i prodotti
@@ -77,8 +83,8 @@ export class CommandaComponent {
               // Seleziono un array da tabella identificato dal tavolo selezionato
               // Se non ci sono ordinazioni comunque ritorna un array di un solo elemento indicate 
               // il i dati del tavolo e gl'altri campi nulli
-              this.dataService.fullData$.subscribe(data => {
-                console.log('commanda');
+              this.subscription = this.dataService.fullData$.subscribe(data => {
+          
                 this.commanda = this.updateCommandaData(data,  this.selectedTable);
                 console.log(this.commanda);
 
@@ -89,6 +95,11 @@ export class CommandaComponent {
         else{console.log("Errore. Non sono riuscito ad acquisire i prodotti");}
     });
     
+  }
+
+  ngOnDestroy(): void {
+    if(this.subscription){this.subscription.unsubscribe();}
+    this.dataService.setUsedComponentSubject('');
   }
 
   // Update data 
@@ -386,7 +397,9 @@ export class CommandaComponent {
 
   }
 
-  setPage(data: string){this.dataService.setPage(data)}
+  setPage(data: string){
+    this.dataService.setPage(data)
+  }
 
 
 }

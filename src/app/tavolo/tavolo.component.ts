@@ -19,33 +19,17 @@ export class TavoloComponent {
   //intervalIdTavoli: undefined | ReturnType<typeof setTimeout>; 
   inputData: any;
   coperti: any;
-  bellSound: any;
-
-  commanda_prodotte: any;
-
-  bellSound_pizzeria_src: string;
-  bellSound_cucina_src: string;
-
-  last_to_production_ISODate: string;
 
   subscription: Subscription | undefined;
 
-  constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService){
-    
-    this.bellSound_pizzeria_src = 'assets/bell-sound-1.wav';
-    this.bellSound_cucina_src = 'assets/bell-sound-2.wav';
-
-    this.last_to_production_ISODate = this.dataService.getCurrentISODate();
-    
-  }
+  constructor(private django: DjangoService, private dataService: DataService, private genericService: GenericService){}
   
   ngOnInit(): void {
 
-    
+    this.dataService.setUsedComponentSubject('tavoli');
+
     // Aquisico full data
     this.subscription = this.dataService.fullData$.subscribe(data => {
-
-      console.log('tavoli');
       
       // data potrebbe essere null se non è stata completata a prima risposta del server
       if(data !== null){
@@ -95,25 +79,15 @@ export class TavoloComponent {
         console.log(this.tavoli);
         console.log(this.dataService.getCurrentISODate())
 
-        this.commanda_prodotte = this.dataService.filterByLastToProductionDate(this.dataService.filterCommandsByStatus(data,'C'), this.last_to_production_ISODate);
-        if (this.commanda_prodotte.length > 0) {
-          console.log(this.commanda_prodotte.length);
-          console.log(this.commanda_prodotte);
-          // Perform the action (e.g., make a sound)
-          //this.dataService.playSound(this.bellSound_pizzeria_src);
-          this.checkAndPlaySounds(this.commanda_prodotte);
-    
-          // Update last_to_production_ISODate to the most recent commanda__to_production in the filtered array
-          const mostRecentDate = new Date(Math.max(...this.commanda_prodotte.map((item: { commanda__to_production: string | number | Date; }) => new Date(item.commanda__to_production).getTime())));
-          this.last_to_production_ISODate = mostRecentDate.toISOString();
-          console.log(this.last_to_production_ISODate);
-        }
-
-
       }
     });
 
 
+  }
+
+  ngOnDestroy(): void {
+    if(this.subscription){this.subscription.unsubscribe();}
+    this.dataService.setUsedComponentSubject('');
   }
 
 
@@ -160,39 +134,7 @@ export class TavoloComponent {
     }
   }
 
-  checkAndPlaySounds(data: any[]): void {
-    // Filter the data for collection IDs 1 and 2
-    const filteredData = data.filter(item =>
-      item.commanda__product__collection_id === 1 || item.commanda__product__collection_id === 2
-    );
-
-    // Sort the filtered data by commanda__to_production date
-    filteredData.sort((a, b) => new Date(a.commanda__to_production).getTime() - new Date(b.commanda__to_production).getTime());
-
-    // Flags to check if sounds have been played
-    let sound1Played = false;
-    let sound2Played = false;
-
-    // Play sounds based on collection IDs
-    for (let item of filteredData) {
-      if (item.commanda__product__collection_id === 1 && !sound1Played) {
-        this.dataService.playSound(this.bellSound_pizzeria_src);
-        sound1Played = true;
-      }
-      if (item.commanda__product__collection_id === 2 && !sound2Played) {
-        this.dataService.playSound(this.bellSound_cucina_src);
-        sound2Played = true;
-      }
-
-      // If both sounds have been played, break out of the loop
-      if (sound1Played && sound2Played) {
-        break;
-      }
-    }
-  }
-
   setPage(data: string){
-    if(data == "main" && this.subscription){this.subscription.unsubscribe();}
     this.dataService.setPage(data)
   }
  
