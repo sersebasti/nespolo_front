@@ -26,18 +26,20 @@
       <fieldset  *ngIf="ordiniVisible">
         <mat-chip-set aria-label="Orinazioni">
         <div *ngFor='let element of commanda'>
-          <mat-chip *ngIf="element.commanda__production_status !== 'D'">        
-            <div (click)="modificaElementoCommanda(element)">{{element.commanda__product__title }} ({{ element.commanda__quantity }}) {{element.commanda__note}}</div>
-            
-            <img *ngIf="element.commanda__production_status == 'A'" matChipRemove src="../../assets/images/icons8-delete-30.png" alt="delete" (click)="remove(element)"/>
-            <!-- Se è un prodotto che posso mandare in produzione ci aggiungo una freccia -->
-            <img *ngIf="element.commanda__production_status == 'A' && element.commanda__product__collection_id != 3" matChipRemove src="../../assets/images/send_icon.png" alt="freccia" (click)="change_production_status(element,'B')"/>
-            
-            <img *ngIf="element.commanda__product__collection_id == 3 || element.commanda__production_status == 'C'" matChipRemove src="../../assets/images/check.png" alt="complete" (click)="change_production_status(element,'D')"/>
+          <div class="chip-content">
+            <mat-chip *ngIf="element.commanda__production_status !== 'D'">
 
-            <img *ngIf="element.commanda__production_status == 'B'" matChipRemove src="../../assets/images/gear.png" alt="ingranaggio"/>
-
-        </mat-chip>
+              <div class="chip-text">        
+              <div (click)="modificaElementoCommanda(element)">{{element.commanda__product__title }} ({{ element.commanda__quantity }}) {{element.commanda__note}}</div>
+              </div>
+              <img *ngIf="element.commanda__production_status == 'A'" matChipRemove src="../../assets/images/icons8-delete-30.png" alt="delete" (click)="remove(element)"/>
+              <!-- Se è un prodotto che posso mandare in produzione ci aggiungo una freccia -->
+              <img *ngIf="element.commanda__production_status == 'A' && element.commanda__product__collection_id != 3" matChipRemove src="../../assets/images/send_icon.png" alt="freccia" (click)="change_production_status(element,'B')"/>
+              <img *ngIf="element.commanda__product__collection_id == 3 || element.commanda__production_status == 'C'" matChipRemove src="../../assets/images/check.png" alt="complete" (click)="change_production_status(element,'D')"/>
+              <img *ngIf="element.commanda__production_status == 'B'" matChipRemove src="../../assets/images/gear.png" alt="ingranaggio"/>
+          
+            </mat-chip>
+          </div> 
         </div>  
         </mat-chip-set>
 
@@ -59,7 +61,7 @@
         </div>
         <hr>
         <p>Nota:</p>
-        <textarea rows="3" maxlength="3000" placeholder="" class="custom-textarea" [(ngModel)]="selected_commanda_element.commanda__note" (keydown.enter)="onEnterPressed($event)"></textarea>
+        <textarea rows="3" maxlength="50" placeholder="" class="custom-textarea" [(ngModel)]="selected_commanda_element.commanda__note" (keydown.enter)="onEnterPressed($event)"></textarea>
         <!-- Other HTML code -->
         <div class="centered-row">
             <button mat-button class="salva" (click)="aggiornaElementoCommanda()">Salva</button>

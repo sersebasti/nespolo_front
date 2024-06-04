@@ -42,3 +42,24 @@ mat-chip button {
     font-weight: bold;
     font-size: 15px;
 }
+
+.mat-chip {
+    max-width: 100%;
+    white-space: normal; /* Allow text to wrap */
+    word-wrap: break-word; /* Break long words to wrap */
+}
+  
+.chip-content {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap; /* Ensure that the content can wrap */
+}
+  
+.chip-text {
+    flex: 1 1 auto; /* Allow text to take available space */
+    white-space: normal;
+}
+  
+.mat-chip img {
+    margin-left: 8px; /* Space between text and icons */
+}
