@@ -15,6 +15,8 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import {MatCardModule} from '@angular/material/card';
+
 
 
 
@@ -57,7 +59,9 @@ import { DataService } from './servizi/data.service';
     MatGridListModule,
     MatFormFieldModule,
     HttpClientModule,
-    MatAutocompleteModule
+    MatAutocompleteModule,
+    MatRadioModule,
+    MatCardModule
   ],
   providers: [
     DataService,    

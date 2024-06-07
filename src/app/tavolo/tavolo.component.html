@@ -2,16 +2,64 @@
   <p class="legend_tavoli">Tavoli</p> 
 
 
-  <fieldset class="fieldset_tavoli">
+  <!--fieldset class="fieldset_tavoli">
     <mat-chip-listbox>
 
-      <mat-chip  *ngFor='let tavolo of tavoli' (click)="onTavoloClick(tavolo)">
-        <button mat-button>{{ tavolo.tavolo_nome }} <span *ngIf="tavolo.status_AC_Count !== 0">({{ tavolo.status_AC_Count }})</span> </button>
-        <img matChipRemove src="../../assets/images/icons8-delete-30.png" alt="delete" (click)="removeTavolo(tavolo)"/>
-      </mat-chip>
+      <div *ngFor='let tavolo of tavoli' (click)="onTavoloClick(tavolo)">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Tavolo: {{ tavolo.tavolo_nome }} <span *ngIf="tavolo.status_AC_Count !== 0">({{ tavolo.status_AC_Count }})</span> </mat-card-title>
+          
+          </mat-card-header>
+          <mat-card-actions>
+            <ul  class="commanda-list">
+              <div *ngFor="let commanda of commande">
+              <li *ngIf="tavolo.tavoloId == commanda.id && commanda.commanda__production_status == 'A' || commanda.commanda__production_status == 'B'" >
+                {{ commanda.commanda__quantity }}x: {{ commanda.commanda__product__title }}
+              </li>
+              </div>
+            </ul>
+          </mat-card-actions>
+        </mat-card>
+      </div>
 
+   
     </mat-chip-listbox>
+  </fieldset-->
+
+  <fieldset class="fieldset_tavoli">
+    <div class="tavolo-container">
+      <div *ngFor='let tavolo of tavoli' class="my_box" style="background-color: #51c481; margin: 2px;">
+        
+        <mat-card class="tavolo-card" (click)="onTavoloClick(tavolo)">
+          <mat-card-header>
+            <mat-card-title>
+              Tavolo: {{ tavolo.tavolo_nome }} 
+              <span *ngIf="tavolo.status_AC_Count !== 0">({{ tavolo.status_AC_Count }})</span>
+            </mat-card-title>
+            
+          </mat-card-header>
+          <mat-card-content>
+            <ul class="commanda-list">
+              <div *ngFor="let commanda of commande">
+                <li *ngIf="tavolo.tavoloId == commanda.id && (commanda.commanda__production_status !== 'D')  && (commanda.commanda__id !== null)">
+                  {{ commanda.commanda__quantity }}x: {{ commanda.commanda__product__title }}
+                </li>
+              </div>
+            </ul>
+            <!--img src="../../assets/images/icons8-delete-30.png" alt="delete" (click)="removeTavolo(tavolo)"/-->
+           
+          </mat-card-content>
+
+        </mat-card>
+        <div style="text-align: center;"><img src="../../assets/images/icons8-delete-30.png" alt="delete" (click)="removeTavolo(tavolo)"></div>
+      </div>
+      
+    </div>
   </fieldset>
+  
+
+
 
   <div  class="bottom-flex-container-1">
     <input class="legend_add_tavoli" matInput type="text" placeholder="Nuovo Tavolo" (keydown)="onEnterKeyPressed($event)" style="border-radius: 30px">

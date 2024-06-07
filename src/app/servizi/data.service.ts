@@ -36,8 +36,8 @@ export class DataService {
 
   urls: { main: string; products: string; commande: string; tavoli: string; tavoli_status: string; ordinazione: string; full: string;}
 
-  version: string = '1.4.3';
-  version_back: string = '2.5.14';
+  version: string = '1.5.1';
+  version_back: string = '2.5.16';
 
   private readonly freq = 1500;
   selectedTable: number = 0;
@@ -238,7 +238,7 @@ export class DataService {
     // Play sounds based on collection IDs
     for (let item of filteredData) {
       if (item.commanda__product__collection_id === 1 && !sound1Played) {
-        this.playSound(this.bellSound_pizzeria_src);
+        //this.playSound(this.bellSound_pizzeria_src);
         sound1Played = true;
       }
       if (item.commanda__product__collection_id === 2 && !sound2Played) {

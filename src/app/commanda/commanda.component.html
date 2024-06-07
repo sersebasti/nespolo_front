@@ -32,11 +32,11 @@
               <div class="chip-text">        
               <div (click)="modificaElementoCommanda(element)">{{element.commanda__product__title }} ({{ element.commanda__quantity }}) {{element.commanda__note}}</div>
               </div>
-              <img *ngIf="element.commanda__production_status == 'A'" matChipRemove src="../../assets/images/icons8-delete-30.png" alt="delete" (click)="remove(element)"/>
+              <img *ngIf="element.commanda__production_status == 'A' || element.commanda__production_status == 'B'" matChipRemove src="../../assets/images/icons8-delete-30.png" alt="delete" (click)="remove(element)"/>
               <!-- Se è un prodotto che posso mandare in produzione ci aggiungo una freccia -->
               <img *ngIf="element.commanda__production_status == 'A' && element.commanda__product__collection_id != 3" matChipRemove src="../../assets/images/send_icon.png" alt="freccia" (click)="change_production_status(element,'B')"/>
-              <img *ngIf="element.commanda__product__collection_id == 3 || element.commanda__production_status == 'C'" matChipRemove src="../../assets/images/check.png" alt="complete" (click)="change_production_status(element,'D')"/>
-              <img *ngIf="element.commanda__production_status == 'B'" matChipRemove src="../../assets/images/gear.png" alt="ingranaggio"/>
+              <img *ngIf="element.commanda__product__collection_id == 3 || element.commanda__production_status !== 'A'" matChipRemove src="../../assets/images/check.png" alt="complete" (click)="change_production_status(element,'D')"/>
+              <!--img *ngIf="element.commanda__production_status == 'B'" matChipRemove src="../../assets/images/gear.png" alt="ingranaggio"/-->
           
             </mat-chip>
           </div> 
@@ -134,6 +134,8 @@
   
       <div  class="bottom-flex-container-3">
           <a mat-button class="my_buttons"  (click)="setPage('tavoli')"><< Tavoli</a>
+          <a mat-button class="my_buttons"  (click)="invio_cucina()"><label *ngIf="!contoVisible">Invia Cucina</label></a>      
+          <a mat-button class="my_buttons"  (click)="invio_pizze()"><label *ngIf="!contoVisible">Invia Pizze</label></a>      
           <a mat-button class="my_buttons"  (click)="conto('toggle')"><label *ngIf="!contoVisible">Conto</label><label *ngIf="contoVisible">X</label></a>      
       </div>
   

@@ -234,11 +234,16 @@ export class CommandaComponent {
   }
 
   remove(element: any){
-    console.log(this.dataService.urls.commande + element.commanda__id + "/")
-    this.django.deleteData(this.dataService.urls.commande + element.commanda__id + "/").subscribe((data: any) =>{
-      // Aggiorno i dati della commanda sul servizio che poi sono aggiornati in questo componente
-      this.dataService.fetchCommandeOnce();
-    });
+
+    var result = window.confirm("Confermi di voler eliminare?");
+    if(result){      
+      console.log(this.dataService.urls.commande + element.commanda__id + "/")
+      this.django.deleteData(this.dataService.urls.commande + element.commanda__id + "/").subscribe((data: any) =>{
+        // Aggiorno i dati della commanda sul servizio che poi sono aggiornati in questo componente
+        this.dataService.fetchCommandeOnce();
+      });
+    }
+
   }
 
   onEnterPressed(event: Event) {
@@ -395,6 +400,31 @@ export class CommandaComponent {
     //console.log(this.elementiConto);
     //console.log(this.overallTotalPriceString);
 
+  }
+
+
+  invio_pizze(){
+
+    this.commanda.forEach((item: {
+      commanda__production_status: string; commanda__product__collection_id: number; }) => {
+      // Check if the "commanda__product_id" has a specific value (for example, 7)
+      if (item.commanda__product__collection_id === 1 && item.commanda__production_status == "A") {
+          // Call your function for this specific item
+          this.change_production_status(item,'B');
+      }
+    });
+    
+  }
+
+  invio_cucina(){
+    this.commanda.forEach((item: {
+      commanda__production_status: string; commanda__product__collection_id: number; }) => {
+      // Check if the "commanda__product_id" has a specific value (for example, 7)
+      if (item.commanda__product__collection_id === 2 && item.commanda__production_status == "A") {
+          // Call your function for this specific item
+          this.change_production_status(item,'B');
+      }
+    });
   }
 
   setPage(data: string){

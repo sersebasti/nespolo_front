@@ -69,3 +69,58 @@ mat-chip button {
     font-weight: bold;
     font-size: 15px;
 }
+
+.tavolo-button {
+    white-space: normal; /* Allow button to wrap text */
+    display: flex; /* Use flexbox for button content */
+    flex-direction: column; /* Stack elements vertically */
+    align-items: flex-start; /* Align items to the start of the button */
+  }
+  
+  .commanda-list {
+    margin-top: 5px; /* Add margin between button text and list */
+    padding-left: 20px; /* Indent list items */
+  }
+
+  .tavolo-button {
+    white-space: normal; /* Allow button text to wrap */
+    display: flex; /* Use flexbox for button content */
+    flex-direction: column; /* Stack elements vertically */
+    align-items: flex-start; /* Align items to the start of the button */
+    max-width: 2000px; /* Set a maximum width for the button */
+    overflow: hidden; /* Hide overflow content */
+    text-overflow: ellipsis; /* Display ellipsis for overflow text */
+  }
+  
+  .commanda-list {
+    margin-top: 5px; /* Add margin between button text and list */
+    padding-left: 20px; /* Indent list items */
+  }
+
+  .tavolo-card {
+    margin-bottom: 10px; /* Add margin between cards */
+  }
+  
+  .commanda-list {
+    margin-top: 5px; /* Add margin between button text and list */
+    padding-left: 20px; /* Indent list items */
+  }
+
+  .tavolo-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start; /* Align cards at the start */
+  }
+  
+  .mat-card {
+    flex: 1 1 300px; /* Set a flexible width for each card, adjust as needed */
+    margin: 10px; /* Add some margin between cards */
+  }
+
+  .mat-chip-listbox{
+    padding: 10px !important;
+  }
+
+  .my_box{
+    padding: 5px !important;
+  }

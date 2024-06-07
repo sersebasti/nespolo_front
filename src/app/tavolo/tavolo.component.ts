@@ -6,6 +6,7 @@ import { GenericService } from '../servizi/generic.service';
 import { Subscription } from 'rxjs';
 
 
+
 @Component({
   selector: 'app-tavolo',
   templateUrl: './tavolo.component.html',
@@ -19,6 +20,8 @@ export class TavoloComponent {
   //intervalIdTavoli: undefined | ReturnType<typeof setTimeout>; 
   inputData: any;
   coperti: any;
+
+  commande!: any;
 
   subscription: Subscription | undefined;
 
@@ -34,7 +37,8 @@ export class TavoloComponent {
       // data potrebbe essere null se non è stata completata a prima risposta del server
       if(data !== null){
         //console.log(data);
-
+        this.commande = data;
+        console.log(this.commande);
         // Initialize an empty object to store the grouped orders
         const groupedOrders: GroupedOrders = {};
         
@@ -77,6 +81,8 @@ export class TavoloComponent {
         // Convert the grouped orders object to an array and assign it to this.tavoli
         this.tavoli = Object.values(groupedOrders);
         console.log(this.tavoli);
+
+
         //console.log(this.dataService.getCurrentISODate())
 
       }
