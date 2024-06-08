@@ -123,4 +123,9 @@ mat-chip button {
 
   .my_box{
     padding: 5px !important;
+    padding-bottom: 0px !important;
+  }
+
+  .delete_tavolo{
+    max-height: 20px;
   }

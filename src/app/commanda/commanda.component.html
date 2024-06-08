@@ -30,7 +30,7 @@
             <mat-chip *ngIf="element.commanda__production_status !== 'D'">
 
               <div class="chip-text">        
-              <div (click)="modificaElementoCommanda(element)">{{element.commanda__product__title }} ({{ element.commanda__quantity }}) {{element.commanda__note}}</div>
+              <div (click)="modificaElementoCommanda(element)">{{ element.commanda__quantity }}x: {{element.commanda__product__title }} {{element.commanda__note}}</div>
               </div>
               <img *ngIf="element.commanda__production_status == 'A' || element.commanda__production_status == 'B'" matChipRemove src="../../assets/images/icons8-delete-30.png" alt="delete" (click)="remove(element)"/>
               <!-- Se è un prodotto che posso mandare in produzione ci aggiungo una freccia -->
