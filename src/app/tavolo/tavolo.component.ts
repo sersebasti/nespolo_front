@@ -101,20 +101,37 @@ export class TavoloComponent {
   // Quando aggiungo un nuovo tavolo
   onEnterKeyPressed(event: KeyboardEvent): void {
 
+
+
+
+
     if (event.key === 'Enter') {
+      
+      this.inputData = (<HTMLInputElement>event.target).value
 
-      this.coperti = prompt("Inserisci numero coperti:")
-      var intCoperti = parseInt(this.coperti);
+        // Check if any element in the array has the desired tavolo_nome
+        const hasSpecificTavoloNome = this.tavoli.some((tavolo: { tavolo_nome: any; }) => tavolo.tavolo_nome === this.inputData);
+        
+        if (hasSpecificTavoloNome) {
+          window.alert("Esiste già un tavolo: " + this.inputData);
+          // Perform your conditional logic here
+        } else {
 
-      if (isNaN(intCoperti)) {alert("Inserisci numero coperti");} 
-      else{
-        this.inputData = (<HTMLInputElement>event.target).value
+          this.coperti = prompt("Inserisci numero coperti:")
+          var intCoperti = parseInt(this.coperti);
+    
+          if (isNaN(intCoperti)) {alert("Inserisci numero coperti");} 
+          else{
+            
+            this.django.doCreate(this.dataService.urls.tavoli,{"nome": this.inputData, "coperti": intCoperti}).subscribe((response: any) => {
+              console.log("Creato tavolo: " + this.inputData);
+              console.log(JSON.stringify(response));
+            });
+    
+          }
 
-        this.django.doCreate(this.dataService.urls.tavoli,{"nome": this.inputData, "coperti": intCoperti}).subscribe((response: any) => {
-          console.log("Creato tavolo: " + this.inputData);
-          console.log(JSON.stringify(response));
-        });
-      }
+        }
+
 
     }
   }
